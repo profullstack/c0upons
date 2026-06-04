@@ -19,6 +19,10 @@ export const metadata: Metadata = {
     type: "website",
   },
   metadataBase: new URL("https://c0upons.com"),
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
