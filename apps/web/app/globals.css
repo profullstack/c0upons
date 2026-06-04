@@ -26,5 +26,13 @@ body {
 }
 
 input, select, textarea {
-  color: inherit;
+  color: #171717;
+  background-color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  input, select, textarea {
+    color: #ededed;
+    background-color: #1f1f1f;
+  }
 }
