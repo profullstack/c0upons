@@ -7,7 +7,6 @@ const withSerwist = (cfg: NextConfig) => cfg;
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
   turbopack: {},
   images: {
     remotePatterns: [

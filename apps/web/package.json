@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build && cp -r public .next/standalone/public 2>/dev/null; cp -r .next/static .next/standalone/.next/static 2>/dev/null; true",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint app/ components/ lib/",
     "typecheck": "tsc --noEmit",
