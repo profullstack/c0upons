@@ -1,11 +1,9 @@
 import type { NextConfig } from 'next';
-import withSerwistInit from '@serwist/next';
 
-const withSerwist = withSerwistInit({
-  swSrc: 'app/sw.ts',
-  swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV === 'development',
-});
+// @serwist/next uses a webpack plugin that is incompatible with Turbopack
+// (Next.js 16 default). Disabled until Turbopack support lands in serwist.
+// Track: https://github.com/serwist/serwist/issues/54
+const withSerwist = (cfg: NextConfig) => cfg;
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

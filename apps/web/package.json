@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint app/ components/ lib/",
     "typecheck": "tsc --noEmit",
+    "db:migrate": "node scripts/migrate.mjs",
     "clean": "rm -rf .next out node_modules"
   },
   "dependencies": {

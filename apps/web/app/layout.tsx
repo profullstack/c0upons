@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.className} bg-gray-50 text-gray-900 antialiased`}>
+      <body className={`${geist.className} bg-gray-50 text-gray-900 antialiased overflow-x-hidden`}>
         <Header />
         <main className="max-w-7xl mx-auto px-4 py-8">{children}</main>
         <Footer />
