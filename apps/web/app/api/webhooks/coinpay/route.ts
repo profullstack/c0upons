@@ -16,7 +16,7 @@ async function verifySignature(raw: string, header: string): Promise<boolean> {
   );
 
   const payload = `${t}.${raw}`;
-  const sig = Uint8Array.from(v1.match(/.{2}/g)!.map(b => parseInt(b, 16)));
+  const sig = Uint8Array.from(v1.match(/.{2}/g)!.map((b: string) => parseInt(b, 16)));
   return crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(payload));
 }
 
