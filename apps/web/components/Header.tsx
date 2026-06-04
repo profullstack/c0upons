@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import SearchBar from './SearchBar';
+import ConnectButton from './ConnectButton';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -22,6 +23,7 @@ export default function Header() {
           <Link href="/submit" className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg transition-colors">
             Submit Code
           </Link>
+          <ConnectButton />
         </nav>
         {/* Hamburger — mobile only */}
         <button
@@ -62,6 +64,7 @@ export default function Header() {
           >
             Submit Code
           </Link>
+          <ConnectButton />
         </div>
       )}
     </header>

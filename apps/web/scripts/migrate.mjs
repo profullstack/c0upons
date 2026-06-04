@@ -71,6 +71,17 @@ await db.sql`
 `;
 console.log('  coupons');
 
+await db.sql`
+  CREATE TABLE IF NOT EXISTS coupon_votes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    coupon_id  INTEGER NOT NULL REFERENCES coupons(id) ON DELETE CASCADE,
+    voter_did  TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(coupon_id, voter_did)
+  )
+`;
+console.log('  coupon_votes');
+
 const [{ n }] = await db.sql`SELECT COUNT(*) AS n FROM stores`;
 if (n === 0) {
   console.log('  Seeding sample data...');

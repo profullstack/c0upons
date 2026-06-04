@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import CopyButton from './CopyButton';
+import VoteButton from './VoteButton';
 import { Coupon } from '@/lib/types';
 
 export default function CouponCard({ coupon }: { coupon: Coupon }) {
@@ -64,10 +65,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             Get Deal
           </a>
         )}
-        <div className="flex items-center gap-1 text-sm text-gray-400">
-          <span>{coupon.votes}</span>
-          <span>votes</span>
-        </div>
+        <VoteButton couponId={coupon.id} initialVotes={coupon.votes} />
       </div>
 
       {coupon.expiry_date && (
