@@ -173,7 +173,7 @@ export default function SubmitPage() {
             <select
               value={form.store_id}
               onChange={(e) => set('store_id', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
               required={!useNewStore}
             >
               <option value="">Select a store…</option>
@@ -190,14 +190,14 @@ export default function SubmitPage() {
                 placeholder="Store name *"
                 value={form.new_store_name}
                 onChange={(e) => set('new_store_name', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
               <input
                 type="url"
                 placeholder="Website URL (optional)"
                 value={form.new_store_website}
                 onChange={(e) => set('new_store_website', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
           )}
@@ -211,7 +211,7 @@ export default function SubmitPage() {
             placeholder="Title * (e.g. 20% off sitewide)"
             value={form.title}
             onChange={(e) => set('title', e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
             required
           />
 
@@ -221,14 +221,14 @@ export default function SubmitPage() {
               placeholder="Coupon code (optional)"
               value={form.code}
               onChange={(e) => set('code', e.target.value)}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 font-mono focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
             <input
               type="text"
               placeholder="Discount (e.g. 20%)"
               value={form.discount}
               onChange={(e) => set('discount', e.target.value)}
-              className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
@@ -237,7 +237,7 @@ export default function SubmitPage() {
             value={form.description}
             onChange={(e) => set('description', e.target.value)}
             rows={3}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
           />
 
           <div className="flex gap-3">
@@ -247,7 +247,7 @@ export default function SubmitPage() {
                 type="date"
                 value={form.expiry_date}
                 onChange={(e) => set('expiry_date', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
             <div className="flex-1">
@@ -257,7 +257,7 @@ export default function SubmitPage() {
                 placeholder="https://…"
                 value={form.url}
                 onChange={(e) => set('url', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
           </div>
