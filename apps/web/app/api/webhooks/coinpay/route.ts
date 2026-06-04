@@ -1,23 +1,34 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
-const WEBHOOK_SECRET = process.env.COINPAY_WEBHOOK_SECRET!;
+const RAW_SECRET = process.env.COINPAY_WEBHOOK_SECRET!;
+// CoinPay signs with the bare hex key — strip the "whsecret_" prefix if present
+const WEBHOOK_SECRET = RAW_SECRET?.replace(/^whsecret_/, '') ?? RAW_SECRET;
 
 function verifySignature(raw: string, header: string): boolean {
   const parts: Record<string, string> = {};
   for (const part of header.split(',')) {
     const idx = part.indexOf('=');
-    if (idx !== -1) parts[part.slice(0, idx)] = part.slice(idx + 1);
+    if (idx !== -1) parts[part.slice(0, idx).trim()] = part.slice(idx + 1).trim();
   }
   const { t, v1 } = parts;
-  if (!t || !v1) return false;
+  if (!t || !v1) {
+    console.error('CoinPay webhook: missing t or v1 in signature header', header);
+    return false;
+  }
 
   const age = Math.floor(Date.now() / 1000) - parseInt(t, 10);
-  if (Math.abs(age) > 300) return false;
+  if (Math.abs(age) > 300) {
+    console.error('CoinPay webhook: timestamp too old, age =', age);
+    return false;
+  }
 
+  const payload = `${t}.${raw}`;
   const computed = createHmac('sha256', WEBHOOK_SECRET)
-    .update(`${t}.${raw}`)
+    .update(payload)
     .digest('hex');
+
+  console.log('CoinPay webhook sig check — received:', v1.slice(0, 12), 'computed:', computed.slice(0, 12));
 
   try {
     return timingSafeEqual(Buffer.from(v1, 'hex'), Buffer.from(computed, 'hex'));
