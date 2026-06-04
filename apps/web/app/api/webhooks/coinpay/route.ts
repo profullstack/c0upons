@@ -1,31 +1,36 @@
+import { createHmac, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 const WEBHOOK_SECRET = process.env.COINPAY_WEBHOOK_SECRET!;
 
-async function verifySignature(raw: string, header: string): Promise<boolean> {
-  const parts = Object.fromEntries(header.split(',').map(p => p.split('=')));
+function verifySignature(raw: string, header: string): boolean {
+  const parts: Record<string, string> = {};
+  for (const part of header.split(',')) {
+    const idx = part.indexOf('=');
+    if (idx !== -1) parts[part.slice(0, idx)] = part.slice(idx + 1);
+  }
   const { t, v1 } = parts;
   if (!t || !v1) return false;
 
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(WEBHOOK_SECRET),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['verify']
-  );
+  const age = Math.floor(Date.now() / 1000) - parseInt(t, 10);
+  if (Math.abs(age) > 300) return false;
 
-  const payload = `${t}.${raw}`;
-  const sig = Uint8Array.from(v1.match(/.{2}/g)!.map((b: string) => parseInt(b, 16)));
-  return crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(payload));
+  const computed = createHmac('sha256', WEBHOOK_SECRET)
+    .update(`${t}.${raw}`)
+    .digest('hex');
+
+  try {
+    return timingSafeEqual(Buffer.from(v1, 'hex'), Buffer.from(computed, 'hex'));
+  } catch {
+    return false;
+  }
 }
 
 export async function POST(req: NextRequest) {
   const raw = await req.text();
   const sigHeader = req.headers.get('x-coinpay-signature') ?? '';
 
-  const valid = await verifySignature(raw, sigHeader);
-  if (!valid) {
+  if (!verifySignature(raw, sigHeader)) {
     console.error('CoinPay webhook: invalid signature');
     return NextResponse.json({ error: 'invalid signature' }, { status: 401 });
   }
