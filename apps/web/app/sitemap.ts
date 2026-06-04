@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const db = getDb();
 
     const stores = await db.sql`SELECT slug, created_at FROM stores ORDER BY created_at DESC`;
-    const coupons = await db.sql`SELECT id, created_at FROM coupons ORDER BY created_at DESC`;
+    const coupons = await db.sql`SELECT id, created_at FROM coupons WHERE verified = 1 ORDER BY created_at DESC`;
 
     const storeRoutes: MetadataRoute.Sitemap = stores.map((s: { slug: string; created_at: string }) => ({
       url: `${BASE}/stores/${s.slug}`,
