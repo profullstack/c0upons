@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# c0upons — Community Coupon CLI
+# https://c0upons.com
+#
+# Install: curl -fsSL https://c0upons.com/install.sh | sh
+
+set -euo pipefail
+
+VERSION="1.0.0"
+BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
+
+BOLD="\033[1m"
+DIM="\033[2m"
+ORANGE="\033[38;5;208m"
+GREEN="\033[32m"
+RED="\033[31m"
+RESET="\033[0m"
+
+usage() {
+  echo -e "${BOLD}${ORANGE}c0upons${RESET} v${VERSION} — Community Coupon CLI"
+  echo ""
+  echo -e "${BOLD}USAGE${RESET}"
+  echo "  c0upons <command> [options]"
+  echo ""
+  echo -e "${BOLD}COMMANDS${RESET}"
+  echo "  search <query>    Search for coupons"
+  echo "  latest            Show latest/trending coupons"
+  echo "  stores            List all stores"
+  echo "  store <slug>      Show coupons for a store"
+  echo "  version           Print version"
+  echo "  help              Show this help"
+  echo ""
+  echo -e "${BOLD}EXAMPLES${RESET}"
+  echo "  c0upons search nike"
+  echo "  c0upons latest"
+  echo "  c0upons stores"
+  echo "  c0upons store adidas"
+  echo ""
+  echo -e "${DIM}Override API: export C0UPONS_API=http://localhost:3000/api${RESET}"
+  echo -e "${DIM}Docs: https://c0upons.com/docs${RESET}"
+}
+
+require_jq() {
+  if ! command -v jq &>/dev/null; then
+    echo -e "${RED}Error:${RESET} jq is required but not installed."
+    echo "  Install: brew install jq  (macOS)"
+    echo "           apt install jq   (Debian/Ubuntu)"
+    echo "           https://jqlang.github.io/jq/"
+    exit 1
+  fi
+}
+
+urlencode() {
+  local raw="$1"
+  if command -v python3 &>/dev/null; then
+    python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$raw"
+  else
+    printf '%s' "$raw" | sed 's/ /%20/g; s/!/%21/g; s/"/%22/g; s/#/%23/g; s/\$/%24/g; s/&/%26/g; s/'\''/%27/g; s/(/%28/g; s/)/%29/g; s/\*/%2A/g; s/+/%2B/g; s/,/%2C/g; s/:/%3A/g; s/;/%3B/g; s/=/%3D/g; s/?/%3F/g; s/@/%40/g'
+  fi
+}
+
+print_coupon() {
+  local json="$1"
+  local store title code discount expiry id
+  store=$(echo "$json" | jq -r '.store_name // "Unknown"')
+  title=$(echo "$json" | jq -r '.title')
+  code=$(echo "$json" | jq -r '.code // ""')
+  discount=$(echo "$json" | jq -r '.discount // ""')
+  expiry=$(echo "$json" | jq -r '.expiry_date // ""')
+  id=$(echo "$json" | jq -r '.id')
+
+  echo -e "  ${BOLD}${store}${RESET} — ${title}"
+  if [ -n "$code" ]; then
+    echo -e "  Code: ${BOLD}${ORANGE}${code}${RESET}$([ -n "$discount" ] && echo "  ${GREEN}${discount}${RESET}" || true)"
+  else
+    echo -e "  No code — deal link available"
+  fi
+  [ -n "$expiry" ] && echo -e "  ${DIM}Expires: ${expiry}${RESET}"
+  echo -e "  ${DIM}https://c0upons.com/coupons/${id}${RESET}"
+  echo ""
+}
+
+cmd_search() {
+  require_jq
+  local q="${1:-}"
+  if [ -z "$q" ]; then
+    echo "Usage: c0upons search <query>"
+    exit 1
+  fi
+  local encoded
+  encoded=$(urlencode "$q")
+  local results
+  results=$(curl -fsSL "${BASE_URL}/search?q=${encoded}")
+  local count
+  count=$(echo "$results" | jq 'length')
+  if [ "$count" -eq 0 ]; then
+    echo "No coupons found for \"${q}\"."
+    return
+  fi
+  echo -e "${BOLD}${count} coupon(s) for \"${q}\"${RESET}\n"
+  local i=0
+  while IFS= read -r row; do
+    print_coupon "$row"
+    i=$((i + 1))
+    [ "$i" -ge 20 ] && break
+  done < <(echo "$results" | jq -c '.[]')
+}
+
+cmd_latest() {
+  require_jq
+  local results
+  results=$(curl -fsSL "${BASE_URL}/coupons")
+  local count
+  count=$(echo "$results" | jq 'length')
+  echo -e "${BOLD}Latest ${count} coupon(s)${RESET}\n"
+  local i=0
+  while IFS= read -r row; do
+    print_coupon "$row"
+    i=$((i + 1))
+    [ "$i" -ge 10 ] && break
+  done < <(echo "$results" | jq -c '.[]')
+}
+
+cmd_stores() {
+  require_jq
+  local results
+  results=$(curl -fsSL "${BASE_URL}/stores")
+  local count
+  count=$(echo "$results" | jq 'length')
+  echo -e "${BOLD}${count} stores${RESET}\n"
+  echo "$results" | jq -r '.[] | "  \(.name)\t/stores/\(.slug)\t(\(.coupon_count // 0) coupons)"' | column -t -s $'\t'
+}
+
+cmd_store() {
+  require_jq
+  local slug="${1:-}"
+  if [ -z "$slug" ]; then
+    echo "Usage: c0upons store <slug>"
+    exit 1
+  fi
+  local result
+  result=$(curl -fsSL "${BASE_URL}/stores/${slug}")
+  local name
+  name=$(echo "$result" | jq -r '.name // "Unknown"')
+  local coupons
+  coupons=$(echo "$result" | jq -c '.coupons // [] | .[]' 2>/dev/null || echo "")
+  if [ -z "$coupons" ]; then
+    echo "No coupons found for store \"${slug}\"."
+    return
+  fi
+  echo -e "${BOLD}${name}${RESET}\n"
+  while IFS= read -r row; do
+    print_coupon "$row"
+  done <<< "$coupons"
+}
+
+case "${1:-help}" in
+  search)   shift; cmd_search "$@" ;;
+  latest)   cmd_latest ;;
+  stores)   cmd_stores ;;
+  store)    shift; cmd_store "$@" ;;
+  version|--version|-v) echo "c0upons v${VERSION}" ;;
+  help|--help|-h|"") usage ;;
+  *) echo -e "${RED}Unknown command:${RESET} $1\n"; usage; exit 1 ;;
+esac

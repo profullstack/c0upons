@@ -10,23 +10,27 @@ export default function StoreCard({ store }: { store: StoreWithCount }) {
   return (
     <Link
       href={`/stores/${store.slug}`}
-      className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-md hover:border-orange-300 transition-all text-center"
+      className="group bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-2.5 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all text-center"
     >
       {store.logo_url ? (
         <Image
           src={store.logo_url}
           alt={store.name}
-          width={56}
-          height={56}
-          className="rounded object-contain"
+          width={48}
+          height={48}
+          className="rounded-xl object-contain border border-slate-100"
         />
       ) : (
-        <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-xl font-bold">
+        <div className="w-12 h-12 bg-orange-50 border border-orange-100 rounded-xl flex items-center justify-center text-orange-500 font-black text-lg">
           {store.name[0]}
         </div>
       )}
-      <span className="font-semibold text-gray-800 text-sm">{store.name}</span>
-      <span className="text-xs text-gray-400">{store.coupon_count} coupons</span>
+      <span className="font-semibold text-slate-800 text-sm leading-tight group-hover:text-orange-500 transition-colors">
+        {store.name}
+      </span>
+      <span className="text-xs text-slate-400">
+        {store.coupon_count} {store.coupon_count === 1 ? 'coupon' : 'coupons'}
+      </span>
     </Link>
   );
 }

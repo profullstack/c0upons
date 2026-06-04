@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -15,8 +15,12 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #f1f5f9;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -26,13 +30,22 @@ body {
 }
 
 input, select, textarea {
-  color: #171717;
+  color: #0f172a;
   background-color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   input, select, textarea {
-    color: #ededed;
-    background-color: #1f1f1f;
+    color: #f1f5f9;
+    background-color: #1e293b;
   }
+}
+
+::selection {
+  background: #fed7aa;
+  color: #7c2d12;
+}
+
+pre {
+  overflow-x: auto;
 }
