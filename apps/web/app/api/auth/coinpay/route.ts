@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const CLIENT_ID = process.env.COINPAY_API_KEY!;
+const CLIENT_ID = process.env.COINPAY_MERCHANT_ID!;
 const BASE = 'https://coinpayportal.com';
 const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'https://c0upons.up.railway.app'}/api/auth/callback`;
 
