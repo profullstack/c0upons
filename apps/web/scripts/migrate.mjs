@@ -98,6 +98,25 @@ await db.sql`
 `;
 console.log('  blog_posts');
 
+await db.sql`
+  CREATE TABLE IF NOT EXISTS bounties (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    creator_did   TEXT NOT NULL,
+    store_id      INTEGER REFERENCES stores(id),
+    store_name    TEXT,
+    title         TEXT NOT NULL,
+    description   TEXT,
+    reward_usd    REAL NOT NULL,
+    status        TEXT NOT NULL DEFAULT 'open',
+    payment_id    TEXT,
+    coupon_id     INTEGER REFERENCES coupons(id),
+    claimer_did   TEXT,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`;
+console.log('  bounties');
+
 const [{ n }] = await db.sql`SELECT COUNT(*) AS n FROM stores`;
 if (n === 0) {
   console.log('  Seeding sample data...');

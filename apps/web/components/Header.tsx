@@ -26,6 +26,9 @@ export default function Header() {
           <Link href="/stores" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Stores
           </Link>
+          <Link href="/bounties" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+            Bounties
+          </Link>
           <Link href="/blog" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Blog
           </Link>
@@ -71,6 +74,9 @@ export default function Header() {
           </Link>
           <Link href="/stores" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Stores
+          </Link>
+          <Link href="/bounties" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
+            Bounties
           </Link>
           <Link href="/blog" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Blog

@@ -73,8 +73,20 @@ export async function POST(req: NextRequest) {
     case 'test.webhook':
       break;
     case 'payment.completed':
-    case 'payment.confirmed':
+    case 'payment.confirmed': {
+      const meta = event.data?.metadata ?? event.metadata ?? {};
+      if (meta.type === 'bounty_fund' && meta.bounty_id) {
+        const db = (await import('@/lib/db')).getDb();
+        await db.sql`
+          UPDATE bounties
+          SET status = 'funded', payment_id = ${event.data?.payment_id ?? event.id},
+              updated_at = ${new Date().toISOString()}
+          WHERE id = ${meta.bounty_id} AND status = 'open'
+        `;
+        console.log('Bounty funded:', meta.bounty_id);
+      }
       break;
+    }
     case 'payment.failed':
       break;
   }
