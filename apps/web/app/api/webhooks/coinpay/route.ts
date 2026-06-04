@@ -2,8 +2,19 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 const RAW_SECRET = process.env.COINPAY_WEBHOOK_SECRET!;
-// CoinPay signs with the bare hex key — strip the "whsecret_" prefix if present
-const WEBHOOK_SECRET = RAW_SECRET?.replace(/^whsecret_/, '') ?? RAW_SECRET;
+const HEX_SECRET = RAW_SECRET?.replace(/^whsecret_/, '') ?? RAW_SECRET;
+
+function hmac(key: string | Buffer, payload: string): string {
+  return createHmac('sha256', key).update(payload).digest('hex');
+}
+
+function safeEqual(a: string, b: string): boolean {
+  try {
+    return timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'));
+  } catch {
+    return false;
+  }
+}
 
 function verifySignature(raw: string, header: string): boolean {
   const parts: Record<string, string> = {};
@@ -23,18 +34,27 @@ function verifySignature(raw: string, header: string): boolean {
     return false;
   }
 
-  const payload = `${t}.${raw}`;
-  const computed = createHmac('sha256', WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
+  const payloadWithTs = `${t}.${raw}`;
+  const payloadRaw = raw;
 
-  console.log('CoinPay webhook sig check — received:', v1.slice(0, 12), 'computed:', computed.slice(0, 12));
+  // Try every reasonable combination and log results
+  const attempts = [
+    { label: 'hex_str+ts',  key: HEX_SECRET,                        payload: payloadWithTs },
+    { label: 'hex_bin+ts',  key: Buffer.from(HEX_SECRET, 'hex'),    payload: payloadWithTs },
+    { label: 'full_str+ts', key: RAW_SECRET,                        payload: payloadWithTs },
+    { label: 'hex_str_raw', key: HEX_SECRET,                        payload: payloadRaw    },
+    { label: 'hex_bin_raw', key: Buffer.from(HEX_SECRET, 'hex'),    payload: payloadRaw    },
+    { label: 'full_str_raw',key: RAW_SECRET,                        payload: payloadRaw    },
+  ];
 
-  try {
-    return timingSafeEqual(Buffer.from(v1, 'hex'), Buffer.from(computed, 'hex'));
-  } catch {
-    return false;
+  for (const { label, key, payload } of attempts) {
+    const computed = hmac(key, payload);
+    const match = safeEqual(v1, computed);
+    console.log(`CoinPay sig [${label}]: recv=${v1.slice(0,8)} calc=${computed.slice(0,8)} match=${match}`);
+    if (match) return true;
   }
+
+  return false;
 }
 
 export async function POST(req: NextRequest) {
@@ -54,7 +74,6 @@ export async function POST(req: NextRequest) {
       break;
     case 'payment.completed':
     case 'payment.confirmed':
-      // TODO: fulfill order for event.data.payment_id
       break;
     case 'payment.failed':
       break;
