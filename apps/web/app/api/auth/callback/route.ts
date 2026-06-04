@@ -4,7 +4,8 @@ import { createSession, COOKIE } from '@/lib/auth';
 const CLIENT_ID = process.env.COINPAY_API_KEY!;
 const CLIENT_SECRET = process.env.COINPAY_CLIENT_SECRET!;
 const BASE = 'https://coinpayportal.com';
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'https://c0upons.up.railway.app'}/api/auth/callback`;
+const APP_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://c0upons.up.railway.app';
+const REDIRECT_URI = `${APP_URL}/api/auth/callback`;
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get('code');
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
   const returnTo = req.cookies.get('cp_return')?.value ?? '/';
 
   const fail = (msg: string) =>
-    NextResponse.redirect(new URL(`/?auth_error=${encodeURIComponent(msg)}`, req.url));
+    NextResponse.redirect(new URL(`/?auth_error=${encodeURIComponent(msg)}`, APP_URL));
 
   if (error) return fail(error);
   if (!code) return fail('No code returned');
@@ -74,7 +75,7 @@ export async function GET(req: NextRequest) {
   if (!did) return fail('Could not resolve DID');
 
   const session = await createSession(did);
-  const res = NextResponse.redirect(new URL(returnTo, req.url));
+  const res = NextResponse.redirect(new URL(returnTo, APP_URL));
   res.cookies.set(COOKIE, session, {
     httpOnly: true,
     secure: true,
