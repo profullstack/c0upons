@@ -10,6 +10,7 @@ const withSerwist = withSerwistInit({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  turbopack: {},
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
