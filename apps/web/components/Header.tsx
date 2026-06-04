@@ -9,7 +9,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <span className="text-xl font-black text-orange-500 tracking-tight">c0upons</span>
@@ -20,13 +20,13 @@ export default function Header() {
         </div>
 
         <nav className="hidden md:flex items-center gap-1 shrink-0 text-sm font-medium">
-          <Link href="/" className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+          <Link href="/" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Coupons
           </Link>
-          <Link href="/stores" className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+          <Link href="/stores" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Stores
           </Link>
-          <Link href="/docs" className="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+          <Link href="/docs" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Docs
           </Link>
           <Link
@@ -41,7 +41,7 @@ export default function Header() {
         </nav>
 
         <button
-          className="md:hidden ml-auto p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          className="md:hidden ml-auto p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
           aria-label="Toggle menu"
           onClick={() => setMenuOpen((o) => !o)}
         >
@@ -62,14 +62,14 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 flex flex-col gap-2 text-sm font-medium">
-          <Link href="/" className="px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setMenuOpen(false)}>
+        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 flex flex-col gap-2 text-sm font-medium">
+          <Link href="/" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Coupons
           </Link>
-          <Link href="/stores" className="px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setMenuOpen(false)}>
+          <Link href="/stores" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Stores
           </Link>
-          <Link href="/docs" className="px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setMenuOpen(false)}>
+          <Link href="/docs" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Docs
           </Link>
           <Link

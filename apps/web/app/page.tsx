@@ -70,28 +70,28 @@ export default async function HomePage() {
             <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
             Community-powered · always free
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-black text-gray-900 leading-tight tracking-tight">
             Find & share the{' '}
             <span className="text-orange-500">best coupon codes</span>
           </h1>
-          <p className="text-slate-500 text-lg">
+          <p className="text-gray-500 text-lg">
             Real deals from real people. Browse {stats.coupons.toLocaleString()} coupons across{' '}
             {stats.stores.toLocaleString()} stores.
           </p>
           <div className="w-full max-w-lg">
             <SearchBar />
           </div>
-          <div className="flex items-center gap-6 text-sm text-slate-400 pt-2">
+          <div className="flex items-center gap-6 text-sm text-gray-400 pt-2">
             <span className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-700">{stats.coupons.toLocaleString()}</span> coupons
+              <span className="font-bold text-gray-700">{stats.coupons.toLocaleString()}</span> coupons
             </span>
-            <span className="w-px h-4 bg-slate-200" />
+            <span className="w-px h-4 bg-gray-200" />
             <span className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-700">{stats.stores.toLocaleString()}</span> stores
+              <span className="font-bold text-gray-700">{stats.stores.toLocaleString()}</span> stores
             </span>
-            <span className="w-px h-4 bg-slate-200" />
+            <span className="w-px h-4 bg-gray-200" />
             <span className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-700">100%</span> free
+              <span className="font-bold text-gray-700">100%</span> free
             </span>
           </div>
         </div>
@@ -101,15 +101,15 @@ export default async function HomePage() {
       <section>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Trending Coupons</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Highest voted by the community</p>
+            <h2 className="text-xl font-bold text-gray-900">Trending Coupons</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Highest voted by the community</p>
           </div>
           <Link href="/submit" className="text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors">
             + Submit a code
           </Link>
         </div>
         {coupons.length === 0 ? (
-          <div className="text-center py-16 text-slate-400">
+          <div className="text-center py-16 text-gray-400">
             <p className="text-lg font-medium">No coupons yet.</p>
             <p className="text-sm mt-1">Be the first to <Link href="/submit" className="text-orange-500 hover:underline">submit one</Link>!</p>
           </div>
@@ -126,15 +126,15 @@ export default async function HomePage() {
       <section>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Popular Stores</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Browse by retailer</p>
+            <h2 className="text-xl font-bold text-gray-900">Popular Stores</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Browse by retailer</p>
           </div>
           <Link href="/stores" className="text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors">
             View all →
           </Link>
         </div>
         {stores.length === 0 ? (
-          <p className="text-slate-400">No stores yet.</p>
+          <p className="text-gray-400">No stores yet.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {stores.map((s) => (
@@ -145,18 +145,18 @@ export default async function HomePage() {
       </section>
 
       {/* CLI CTA */}
-      <section className="bg-slate-900 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="bg-gray-900 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
           <h2 className="text-xl font-bold text-white">Use c0upons from your terminal</h2>
-          <p className="text-slate-400 text-sm mt-1">Search and browse coupons without leaving the command line.</p>
+          <p className="text-gray-400 text-sm mt-1">Search and browse coupons without leaving the command line.</p>
         </div>
         <div className="flex flex-col gap-3 w-full md:w-auto">
-          <code className="bg-slate-800 text-orange-400 font-mono text-sm px-4 py-3 rounded-lg whitespace-nowrap">
+          <code className="bg-gray-800 text-orange-400 font-mono text-sm px-4 py-3 rounded-lg whitespace-nowrap">
             curl -fsSL https://c0upons.com/install.sh | sh
           </code>
           <Link
             href="/docs#cli"
-            className="text-center text-sm text-slate-400 hover:text-white transition-colors"
+            className="text-center text-sm text-gray-400 hover:text-white transition-colors"
           >
             View CLI docs →
           </Link>

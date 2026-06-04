@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 mt-20">
+    <footer className="bg-gray-900 text-gray-400 mt-20">
       <div className="max-w-7xl mx-auto px-4 py-14">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           <div className="col-span-2 md:col-span-1">
@@ -17,7 +17,7 @@ export default function Footer() {
                 href="https://github.com/profullstack/c0upons"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-500 hover:text-white transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
                 aria-label="GitHub"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -28,7 +28,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-3 text-sm">
-            <span className="font-semibold text-slate-200 text-xs uppercase tracking-widest">Browse</span>
+            <span className="font-semibold text-gray-200 text-xs uppercase tracking-widest">Browse</span>
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/stores" className="hover:text-white transition-colors">All Stores</Link>
             <Link href="/search" className="hover:text-white transition-colors">Search</Link>
@@ -36,7 +36,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-3 text-sm">
-            <span className="font-semibold text-slate-200 text-xs uppercase tracking-widest">Developers</span>
+            <span className="font-semibold text-gray-200 text-xs uppercase tracking-widest">Developers</span>
             <Link href="/docs" className="hover:text-white transition-colors">Documentation</Link>
             <Link href="/docs#cli" className="hover:text-white transition-colors">CLI</Link>
             <Link href="/docs#api" className="hover:text-white transition-colors">REST API</Link>
@@ -51,8 +51,8 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-3 text-sm">
-            <span className="font-semibold text-slate-200 text-xs uppercase tracking-widest">Install CLI</span>
-            <code className="text-xs bg-slate-800 text-orange-400 rounded px-3 py-2 font-mono leading-relaxed block">
+            <span className="font-semibold text-gray-200 text-xs uppercase tracking-widest">Install CLI</span>
+            <code className="text-xs bg-gray-800 text-orange-400 rounded px-3 py-2 font-mono leading-relaxed block">
               curl -fsSL https://c0upons.com/install.sh | sh
             </code>
             <Link href="/docs#cli" className="text-xs text-orange-500 hover:text-orange-400 transition-colors">
@@ -61,7 +61,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
+        <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-gray-500">
           <p>© {new Date().getFullYear()} c0upons. Community-powered savings.</p>
           <p>Built with Next.js · Powered by SQLite Cloud</p>
         </div>

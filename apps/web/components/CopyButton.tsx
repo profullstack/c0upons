@@ -17,7 +17,7 @@ export default function CopyButton({ code }: { code: string }) {
       className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
         copied
           ? 'bg-green-500 text-white'
-          : 'bg-slate-900 hover:bg-slate-700 text-white'
+          : 'bg-gray-900 hover:bg-gray-700 text-white'
       }`}
     >
       <span className="font-mono tracking-widest border border-white/20 rounded px-1.5 py-0.5">

@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.className} bg-white text-slate-900 antialiased overflow-x-hidden`}>
+      <body className={`${geist.className} bg-white text-gray-900 antialiased overflow-x-hidden`}>
         <Header />
         <main className="max-w-7xl mx-auto px-4 py-10">{children}</main>
         <Footer />

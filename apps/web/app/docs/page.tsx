@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="bg-slate-950 text-slate-100 rounded-lg px-4 py-3.5 text-sm font-mono leading-relaxed overflow-x-auto">
+    <pre className="bg-gray-900 text-gray-100 rounded-lg px-4 py-3.5 text-sm font-mono leading-relaxed overflow-x-auto">
       <code>{children}</code>
     </pre>
   );
@@ -16,7 +16,7 @@ function Code({ children }: { children: React.ReactNode }) {
 
 function IC({ children }: { children: React.ReactNode }) {
   return (
-    <code className="bg-slate-100 text-orange-600 text-[13px] font-mono px-1.5 py-0.5 rounded">
+    <code className="bg-gray-100 text-orange-600 text-[13px] font-mono px-1.5 py-0.5 rounded">
       {children}
     </code>
   );
@@ -28,7 +28,7 @@ function Method({ verb }: { verb: string }) {
     POST: 'bg-green-50 text-green-700 border-green-200',
   };
   return (
-    <span className={`inline-block border text-xs font-bold px-2 py-0.5 rounded font-mono ${colors[verb] ?? 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+    <span className={`inline-block border text-xs font-bold px-2 py-0.5 rounded font-mono ${colors[verb] ?? 'bg-gray-100 text-gray-700 border-gray-200'}`}>
       {verb}
     </span>
   );
@@ -42,17 +42,17 @@ function Endpoint({ method, path, desc, example, response }: {
   response?: string;
 }) {
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden">
-      <div className="bg-slate-50 px-4 py-3 flex items-center gap-3 border-b border-slate-200">
+    <div className="border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-gray-50 px-4 py-3 flex items-center gap-3 border-b border-gray-200">
         <Method verb={method} />
         <IC>{path}</IC>
       </div>
       <div className="p-4 flex flex-col gap-3">
-        <p className="text-sm text-slate-600">{desc}</p>
+        <p className="text-sm text-gray-600">{desc}</p>
         <Code>{example}</Code>
         {response && (
           <>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Response</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Response</p>
             <Code>{response}</Code>
           </>
         )}
@@ -118,22 +118,22 @@ export default function DocsPage() {
       {/* Sidebar */}
       <aside className="lg:w-48 shrink-0">
         <div className="lg:sticky lg:top-20">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Contents</p>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">Contents</p>
           <nav className="flex flex-col gap-0.5">
             {nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className={`text-sm px-2 py-1.5 rounded-lg transition-colors hover:bg-orange-50 hover:text-orange-600 text-slate-600 ${
-                  item.sub ? 'pl-5 text-[13px] text-slate-500' : 'font-medium'
+                className={`text-sm px-2 py-1.5 rounded-lg transition-colors hover:bg-orange-50 hover:text-orange-600 text-gray-600 ${
+                  item.sub ? 'pl-5 text-[13px] text-gray-500' : 'font-medium'
                 }`}
               >
                 {item.label}
               </a>
             ))}
           </nav>
-          <div className="mt-6 pt-4 border-t border-slate-100">
-            <Link href="/" className="text-xs text-slate-400 hover:text-orange-500 transition-colors px-2">
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <Link href="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors px-2">
               ← Back home
             </Link>
           </div>
@@ -145,16 +145,16 @@ export default function DocsPage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-black text-slate-900">Documentation</h1>
-          <p className="text-slate-500 mt-2 text-base">
+          <h1 className="text-3xl font-black text-gray-900">Documentation</h1>
+          <p className="text-gray-500 mt-2 text-base">
             Use c0upons from the web, terminal, or your own apps.
           </p>
         </div>
 
         {/* Overview */}
         <section id="overview" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">Overview</h2>
-          <p className="text-slate-600 leading-relaxed">
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">Overview</h2>
+          <p className="text-gray-600 leading-relaxed">
             <strong>c0upons</strong> is an open-source, community-powered coupon platform.
             Browse and submit deals for free on the web, or use the CLI and API to integrate
             savings into your own tools.
@@ -165,10 +165,10 @@ export default function DocsPage() {
               { icon: '⌨️', title: 'CLI', desc: 'Search deals from your terminal' },
               { icon: '🔌', title: 'API', desc: 'Integrate into your own apps' },
             ].map((f) => (
-              <div key={f.title} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div key={f.title} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <div className="text-2xl mb-2">{f.icon}</div>
-                <div className="font-semibold text-slate-900 text-sm">{f.title}</div>
-                <div className="text-xs text-slate-500 mt-0.5">{f.desc}</div>
+                <div className="font-semibold text-gray-900 text-sm">{f.title}</div>
+                <div className="text-xs text-gray-500 mt-0.5">{f.desc}</div>
               </div>
             ))}
           </div>
@@ -176,37 +176,37 @@ export default function DocsPage() {
 
         {/* CLI */}
         <section id="cli" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">CLI</h2>
-          <p className="text-slate-600 leading-relaxed">
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">CLI</h2>
+          <p className="text-gray-600 leading-relaxed">
             The <IC>c0upons</IC> CLI is a bash script that works on macOS and Linux.
             Requires <IC>curl</IC> and <IC>jq</IC>.
           </p>
         </section>
 
         <section id="cli-install" className="scroll-mt-20 flex flex-col gap-4">
-          <h3 className="text-base font-bold text-slate-800">Installation</h3>
+          <h3 className="text-base font-bold text-gray-800">Installation</h3>
           <Code>{`curl -fsSL https://c0upons.com/install.sh | sh`}</Code>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             Installs to <IC>/usr/local/bin/c0upons</IC> (or <IC>~/.local/bin</IC> without sudo).
           </p>
 
-          <h3 className="text-base font-bold text-slate-800 mt-2">Upgrade</h3>
+          <h3 className="text-base font-bold text-gray-800 mt-2">Upgrade</h3>
           <Code>{`c0upons upgrade`}</Code>
 
-          <h3 className="text-base font-bold text-slate-800 mt-2">Uninstall</h3>
+          <h3 className="text-base font-bold text-gray-800 mt-2">Uninstall</h3>
           <Code>{`c0upons remove`}</Code>
 
-          <h3 className="text-base font-bold text-slate-800 mt-2">Dependencies</h3>
-          <div className="border border-slate-200 rounded-lg overflow-hidden text-sm">
+          <h3 className="text-base font-bold text-gray-800 mt-2">Dependencies</h3>
+          <div className="border border-gray-200 rounded-lg overflow-hidden text-sm">
             <table className="w-full border-collapse">
-              <thead className="bg-slate-50">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Tool</th>
-                  <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Required</th>
-                  <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Install</th>
+                  <th className="text-left px-4 py-2.5 text-gray-500 font-medium border-b border-gray-200">Tool</th>
+                  <th className="text-left px-4 py-2.5 text-gray-500 font-medium border-b border-gray-200">Required</th>
+                  <th className="text-left px-4 py-2.5 text-gray-500 font-medium border-b border-gray-200">Install</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-100">
                 {[
                   { tool: 'curl', req: 'Yes', install: 'Pre-installed on most systems' },
                   { tool: 'jq', req: 'Yes', install: 'brew install jq · apt install jq' },
@@ -214,8 +214,8 @@ export default function DocsPage() {
                 ].map((row) => (
                   <tr key={row.tool}>
                     <td className="px-4 py-2.5"><IC>{row.tool}</IC></td>
-                    <td className="px-4 py-2.5 text-slate-600">{row.req}</td>
-                    <td className="px-4 py-2.5 text-slate-500">{row.install}</td>
+                    <td className="px-4 py-2.5 text-gray-600">{row.req}</td>
+                    <td className="px-4 py-2.5 text-gray-500">{row.install}</td>
                   </tr>
                 ))}
               </tbody>
@@ -224,31 +224,31 @@ export default function DocsPage() {
         </section>
 
         <section id="cli-commands" className="scroll-mt-20 flex flex-col gap-6">
-          <h3 className="text-base font-bold text-slate-800">Commands</h3>
+          <h3 className="text-base font-bold text-gray-800">Commands</h3>
           {CLI_COMMANDS.map((item) => (
             <div key={item.cmd} className="flex flex-col gap-2">
               <IC>{item.cmd}</IC>
-              <p className="text-sm text-slate-600">{item.desc}</p>
+              <p className="text-sm text-gray-600">{item.desc}</p>
               <Code>{item.example}</Code>
             </div>
           ))}
 
           <div className="mt-2">
-            <h3 className="text-base font-bold text-slate-800 mb-3">Environment</h3>
-            <div className="border border-slate-200 rounded-lg overflow-hidden text-sm">
+            <h3 className="text-base font-bold text-gray-800 mb-3">Environment</h3>
+            <div className="border border-gray-200 rounded-lg overflow-hidden text-sm">
               <table className="w-full border-collapse">
-                <thead className="bg-slate-50">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Variable</th>
-                    <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Default</th>
-                    <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Description</th>
+                    <th className="text-left px-4 py-2.5 text-gray-500 font-medium border-b border-gray-200">Variable</th>
+                    <th className="text-left px-4 py-2.5 text-gray-500 font-medium border-b border-gray-200">Default</th>
+                    <th className="text-left px-4 py-2.5 text-gray-500 font-medium border-b border-gray-200">Description</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td className="px-4 py-2.5"><IC>C0UPONS_API</IC></td>
-                    <td className="px-4 py-2.5 text-slate-500 font-mono text-xs">https://c0upons.com/api</td>
-                    <td className="px-4 py-2.5 text-slate-500">Override the API base URL</td>
+                    <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">https://c0upons.com/api</td>
+                    <td className="px-4 py-2.5 text-gray-500">Override the API base URL</td>
                   </tr>
                 </tbody>
               </table>
@@ -258,15 +258,15 @@ export default function DocsPage() {
 
         {/* API */}
         <section id="api" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">REST API</h2>
-          <p className="text-slate-600 leading-relaxed">
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">REST API</h2>
+          <p className="text-gray-600 leading-relaxed">
             No authentication required for read operations. Base URL:{' '}
             <IC>https://c0upons.com/api</IC>
           </p>
         </section>
 
         <section id="api-coupons" className="scroll-mt-20 flex flex-col gap-4">
-          <h3 className="text-base font-bold text-slate-800">Coupons</h3>
+          <h3 className="text-base font-bold text-gray-800">Coupons</h3>
           <Endpoint
             method="GET"
             path="/api/coupons"
@@ -304,7 +304,7 @@ export default function DocsPage() {
         </section>
 
         <section id="api-stores" className="scroll-mt-20 flex flex-col gap-4">
-          <h3 className="text-base font-bold text-slate-800">Stores</h3>
+          <h3 className="text-base font-bold text-gray-800">Stores</h3>
           <Endpoint
             method="GET"
             path="/api/stores"
@@ -320,7 +320,7 @@ export default function DocsPage() {
         </section>
 
         <section id="api-search" className="scroll-mt-20 flex flex-col gap-4">
-          <h3 className="text-base font-bold text-slate-800">Search</h3>
+          <h3 className="text-base font-bold text-gray-800">Search</h3>
           <Endpoint
             method="GET"
             path="/api/search?q=query"
@@ -331,8 +331,8 @@ export default function DocsPage() {
 
         {/* Contributing */}
         <section id="contributing" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">Contributing</h2>
-          <p className="text-slate-600 leading-relaxed">
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">Contributing</h2>
+          <p className="text-gray-600 leading-relaxed">
             c0upons is open source. Contributions are welcome — submit coupons via the web, report
             bugs, or open a pull request.
           </p>
@@ -347,12 +347,12 @@ export default function DocsPage() {
               href="https://github.com/profullstack/c0upons"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-semibold px-4 py-3 rounded-lg text-center transition-colors"
+              className="flex-1 border border-gray-200 hover:border-gray-300 text-gray-700 text-sm font-semibold px-4 py-3 rounded-lg text-center transition-colors"
             >
               View on GitHub ↗
             </a>
           </div>
-          <h3 className="text-base font-bold text-slate-800 mt-2">Submit via API</h3>
+          <h3 className="text-base font-bold text-gray-800 mt-2">Submit via API</h3>
           <Code>{`curl -X POST https://c0upons.com/api/coupons \\
   -H "Content-Type: application/json" \\
   -d '{"store_id": 1, "title": "15% off everything", "code": "GET15"}'`}</Code>

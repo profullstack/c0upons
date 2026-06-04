@@ -6,7 +6,7 @@ import { Coupon } from '@/lib/types';
 
 export default function CouponCard({ coupon }: { coupon: Coupon }) {
   return (
-    <div className="group bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all">
+    <div className="group bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all">
       {/* Store row */}
       <div className="flex items-center gap-2.5">
         {coupon.store_logo ? (
@@ -15,7 +15,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             alt={coupon.store_name ?? ''}
             width={32}
             height={32}
-            className="rounded-lg object-contain border border-slate-100"
+            className="rounded-lg object-contain border border-gray-100"
           />
         ) : (
           <div className="w-8 h-8 bg-orange-50 border border-orange-100 rounded-lg flex items-center justify-center text-orange-500 text-xs font-black shrink-0">
@@ -24,7 +24,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         )}
         <Link
           href={`/stores/${coupon.store_slug}`}
-          className="text-xs font-semibold text-slate-500 hover:text-orange-500 transition-colors truncate"
+          className="text-xs font-semibold text-gray-500 hover:text-orange-500 transition-colors truncate"
         >
           {coupon.store_name}
         </Link>
@@ -38,12 +38,12 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       {/* Title */}
       <div className="flex-1">
         <Link href={`/coupons/${coupon.id}`}>
-          <h3 className="font-semibold text-slate-900 text-sm leading-snug hover:text-orange-500 transition-colors line-clamp-2">
+          <h3 className="font-semibold text-gray-900 text-sm leading-snug hover:text-orange-500 transition-colors line-clamp-2">
             {coupon.title}
           </h3>
         </Link>
         {coupon.description && (
-          <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">{coupon.description}</p>
+          <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{coupon.description}</p>
         )}
       </div>
 
@@ -57,7 +57,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-2 mt-auto pt-1 border-t border-slate-100">
+      <div className="flex items-center gap-2 mt-auto pt-1 border-t border-gray-100">
         <div className="flex-1 min-w-0">
           {coupon.code ? (
             <CopyButton code={coupon.code} />
@@ -76,7 +76,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       </div>
 
       {coupon.expiry_date && (
-        <p className="text-xs text-slate-400">Expires {coupon.expiry_date}</p>
+        <p className="text-xs text-gray-400">Expires {coupon.expiry_date}</p>
       )}
     </div>
   );
