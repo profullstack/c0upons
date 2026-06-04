@@ -132,7 +132,7 @@ export default function DocsPage() {
               </a>
             ))}
           </nav>
-          <div className="mt-6 pt-4 border-t border-gray-100">
+          <div className="mt-6 pt-4 border-t border-gray-200">
             <Link href="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors px-2">
               ← Back home
             </Link>
@@ -153,7 +153,7 @@ export default function DocsPage() {
 
         {/* Overview */}
         <section id="overview" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">Overview</h2>
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-200">Overview</h2>
           <p className="text-gray-600 leading-relaxed">
             <strong>c0upons</strong> is an open-source, community-powered coupon platform.
             Browse and submit deals for free on the web, or use the CLI and API to integrate
@@ -176,7 +176,7 @@ export default function DocsPage() {
 
         {/* CLI */}
         <section id="cli" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">CLI</h2>
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-200">CLI</h2>
           <p className="text-gray-600 leading-relaxed">
             The <IC>c0upons</IC> CLI is a bash script that works on macOS and Linux.
             Requires <IC>curl</IC> and <IC>jq</IC>.
@@ -258,7 +258,7 @@ export default function DocsPage() {
 
         {/* API */}
         <section id="api" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">REST API</h2>
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-200">REST API</h2>
           <p className="text-gray-600 leading-relaxed">
             No authentication required for read operations. Base URL:{' '}
             <IC>https://c0upons.com/api</IC>
@@ -331,7 +331,7 @@ export default function DocsPage() {
 
         {/* Contributing */}
         <section id="contributing" className="scroll-mt-20 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-100">Contributing</h2>
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-200">Contributing</h2>
           <p className="text-gray-600 leading-relaxed">
             c0upons is open source. Contributions are welcome — submit coupons via the web, report
             bugs, or open a pull request.
