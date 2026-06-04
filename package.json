@@ -2,26 +2,33 @@
   "name": "c0upons",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
   },
-  "dependencies": {
-    "@sqlitecloud/drivers": "^1.0.880",
-    "next": "16.2.7",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@c0upons/web",
+    "dev:cli": "turbo run dev --filter=@c0upons/cli",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@c0upons/web",
+    "build:cli": "turbo run build --filter=@c0upons/cli",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "setup:hooks": "git config core.hooksPath .githooks && echo 'Git hooks configured'"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "@types/node": "^22",
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/profullstack/c0upons.git"
+  },
+  "author": "Profullstack, Inc.",
+  "license": "MIT"
 }

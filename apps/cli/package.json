@@ -1,0 +1,28 @@
+{
+  "name": "@c0upons/cli",
+  "version": "0.1.0",
+  "description": "c0upons CLI — search, submit, and manage coupons from the terminal",
+  "type": "module",
+  "bin": {
+    "c0upons": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
