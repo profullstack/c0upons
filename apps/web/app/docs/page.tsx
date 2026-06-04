@@ -6,370 +6,358 @@ export const metadata: Metadata = {
   description: 'Documentation for the c0upons CLI and REST API.',
 };
 
-function Section({ id, children }: { id: string; children: React.ReactNode }) {
-  return (
-    <section id={id} className="flex flex-col gap-4 scroll-mt-20">
-      {children}
-    </section>
-  );
-}
-
-function H2({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-3">{children}</h2>;
-}
-
-function H3({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-base font-bold text-slate-800 mt-2">{children}</h3>;
-}
-
 function Code({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="bg-slate-900 text-slate-100 rounded-xl p-4 text-sm font-mono leading-relaxed overflow-x-auto">
+    <pre className="bg-slate-950 text-slate-100 rounded-lg px-4 py-3.5 text-sm font-mono leading-relaxed overflow-x-auto">
       <code>{children}</code>
     </pre>
   );
 }
 
-function InlineCode({ children }: { children: React.ReactNode }) {
+function IC({ children }: { children: React.ReactNode }) {
   return (
-    <code className="bg-slate-100 text-orange-600 text-sm font-mono px-1.5 py-0.5 rounded">
+    <code className="bg-slate-100 text-orange-600 text-[13px] font-mono px-1.5 py-0.5 rounded">
       {children}
     </code>
   );
 }
 
-function Badge({ children }: { children: React.ReactNode }) {
+function Method({ verb }: { verb: string }) {
+  const colors: Record<string, string> = {
+    GET: 'bg-blue-50 text-blue-700 border-blue-200',
+    POST: 'bg-green-50 text-green-700 border-green-200',
+  };
   return (
-    <span className="inline-block bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-      {children}
+    <span className={`inline-block border text-xs font-bold px-2 py-0.5 rounded font-mono ${colors[verb] ?? 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+      {verb}
     </span>
   );
 }
 
+function Endpoint({ method, path, desc, example, response }: {
+  method: string;
+  path: string;
+  desc: string;
+  example: string;
+  response?: string;
+}) {
+  return (
+    <div className="border border-slate-200 rounded-xl overflow-hidden">
+      <div className="bg-slate-50 px-4 py-3 flex items-center gap-3 border-b border-slate-200">
+        <Method verb={method} />
+        <IC>{path}</IC>
+      </div>
+      <div className="p-4 flex flex-col gap-3">
+        <p className="text-sm text-slate-600">{desc}</p>
+        <Code>{example}</Code>
+        {response && (
+          <>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Response</p>
+            <Code>{response}</Code>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const CLI_COMMANDS = [
+  {
+    cmd: 'c0upons search <query>',
+    desc: 'Search for coupons by store name, code, or title.',
+    example: 'c0upons search nike\nc0upons search "20% off"',
+  },
+  {
+    cmd: 'c0upons latest',
+    desc: 'Show the most recent/trending coupons.',
+    example: 'c0upons latest',
+  },
+  {
+    cmd: 'c0upons stores',
+    desc: 'List all stores with active coupons.',
+    example: 'c0upons stores',
+  },
+  {
+    cmd: 'c0upons store <slug>',
+    desc: 'Show all coupons for a specific store.',
+    example: 'c0upons store adidas\nc0upons store nike',
+  },
+  {
+    cmd: 'c0upons upgrade',
+    desc: 'Upgrade the CLI to the latest version. Alias: update',
+    example: 'c0upons upgrade\nc0upons update',
+  },
+  {
+    cmd: 'c0upons remove',
+    desc: 'Uninstall the CLI from your system. Alias: uninstall',
+    example: 'c0upons remove\nc0upons uninstall',
+  },
+  {
+    cmd: 'c0upons version',
+    desc: 'Print the installed CLI version.',
+    example: 'c0upons version',
+  },
+];
+
 const nav = [
-  { href: '#overview', label: 'Overview' },
-  { href: '#cli', label: 'CLI' },
-  { href: '#cli-install', label: '  Installation' },
-  { href: '#cli-commands', label: '  Commands' },
-  { href: '#api', label: 'REST API' },
-  { href: '#api-coupons', label: '  Coupons' },
-  { href: '#api-stores', label: '  Stores' },
-  { href: '#api-search', label: '  Search' },
-  { href: '#contributing', label: 'Contributing' },
+  { href: '#overview', label: 'Overview', sub: false },
+  { href: '#cli', label: 'CLI', sub: false },
+  { href: '#cli-install', label: 'Installation', sub: true },
+  { href: '#cli-commands', label: 'Commands', sub: true },
+  { href: '#api', label: 'REST API', sub: false },
+  { href: '#api-coupons', label: 'Coupons', sub: true },
+  { href: '#api-stores', label: 'Stores', sub: true },
+  { href: '#api-search', label: 'Search', sub: true },
+  { href: '#contributing', label: 'Contributing', sub: false },
 ];
 
 export default function DocsPage() {
   return (
-    <div className="flex flex-col lg:flex-row gap-10 max-w-5xl mx-auto">
+    <div className="flex flex-col lg:flex-row gap-12 max-w-5xl mx-auto">
+
       {/* Sidebar */}
-      <aside className="lg:w-52 shrink-0">
-        <div className="lg:sticky lg:top-20 flex flex-col gap-1">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-3">On this page</p>
-          {nav.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`text-sm px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-100 hover:text-orange-500 text-slate-600 ${
-                item.label.startsWith('  ') ? 'pl-6 text-xs' : 'font-medium'
-              }`}
-            >
-              {item.label.trim()}
-            </a>
-          ))}
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <Link
-              href="/"
-              className="text-xs text-slate-400 hover:text-orange-500 transition-colors px-3"
-            >
-              ← Back to coupons
+      <aside className="lg:w-48 shrink-0">
+        <div className="lg:sticky lg:top-20">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Contents</p>
+          <nav className="flex flex-col gap-0.5">
+            {nav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className={`text-sm px-2 py-1.5 rounded-lg transition-colors hover:bg-orange-50 hover:text-orange-600 text-slate-600 ${
+                  item.sub ? 'pl-5 text-[13px] text-slate-500' : 'font-medium'
+                }`}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <div className="mt-6 pt-4 border-t border-slate-100">
+            <Link href="/" className="text-xs text-slate-400 hover:text-orange-500 transition-colors px-2">
+              ← Back home
             </Link>
           </div>
         </div>
       </aside>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0 flex flex-col gap-12">
+      {/* Main content */}
+      <div className="flex-1 min-w-0 flex flex-col gap-14">
+
+        {/* Header */}
         <div>
           <h1 className="text-3xl font-black text-slate-900">Documentation</h1>
-          <p className="text-slate-500 mt-2">
-            Everything you need to use c0upons from the web, terminal, or your own apps.
+          <p className="text-slate-500 mt-2 text-base">
+            Use c0upons from the web, terminal, or your own apps.
           </p>
         </div>
 
         {/* Overview */}
-        <Section id="overview">
-          <H2>Overview</H2>
+        <section id="overview" className="scroll-mt-20 flex flex-col gap-5">
+          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">Overview</h2>
           <p className="text-slate-600 leading-relaxed">
-            <strong>c0upons</strong> is a community-powered coupon code platform. Anyone can browse
-            deals for free, submit codes, and vote on the best ones. It also exposes a simple REST
-            API and a bash CLI so developers can integrate savings into their own workflows.
+            <strong>c0upons</strong> is an open-source, community-powered coupon platform.
+            Browse and submit deals for free on the web, or use the CLI and API to integrate
+            savings into your own tools.
           </p>
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-3 gap-3">
             {[
-              { icon: '🌐', title: 'Web App', desc: 'Browse and submit coupons at c0upons.com' },
-              { icon: '⌨️', title: 'CLI', desc: 'Search deals without leaving the terminal' },
-              { icon: '🔌', title: 'REST API', desc: 'Integrate coupons into your own apps' },
+              { icon: '🌐', title: 'Web', desc: 'Browse and submit at c0upons.com' },
+              { icon: '⌨️', title: 'CLI', desc: 'Search deals from your terminal' },
+              { icon: '🔌', title: 'API', desc: 'Integrate into your own apps' },
             ].map((f) => (
-              <div key={f.title} className="border border-slate-200 rounded-xl p-4 flex flex-col gap-2">
-                <span className="text-2xl">{f.icon}</span>
-                <span className="font-semibold text-slate-900 text-sm">{f.title}</span>
-                <span className="text-xs text-slate-500">{f.desc}</span>
+              <div key={f.title} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div className="text-2xl mb-2">{f.icon}</div>
+                <div className="font-semibold text-slate-900 text-sm">{f.title}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{f.desc}</div>
               </div>
             ))}
           </div>
-        </Section>
+        </section>
 
         {/* CLI */}
-        <Section id="cli">
-          <H2>CLI</H2>
+        <section id="cli" className="scroll-mt-20 flex flex-col gap-5">
+          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">CLI</h2>
           <p className="text-slate-600 leading-relaxed">
-            The <InlineCode>c0upons</InlineCode> CLI is a bash script that lets you search coupons,
-            list stores, and browse deals from your terminal. It requires <InlineCode>curl</InlineCode>{' '}
-            and <InlineCode>jq</InlineCode>.
+            The <IC>c0upons</IC> CLI is a bash script that works on macOS and Linux.
+            Requires <IC>curl</IC> and <IC>jq</IC>.
           </p>
-        </Section>
+        </section>
 
-        <Section id="cli-install">
-          <H3>Installation</H3>
-          <p className="text-sm text-slate-600">Install with one command:</p>
+        <section id="cli-install" className="scroll-mt-20 flex flex-col gap-4">
+          <h3 className="text-base font-bold text-slate-800">Installation</h3>
           <Code>{`curl -fsSL https://c0upons.com/install.sh | sh`}</Code>
-          <p className="text-sm text-slate-600">
-            The installer places the script in <InlineCode>/usr/local/bin/c0upons</InlineCode> (or{' '}
-            <InlineCode>~/.local/bin</InlineCode> if you don&apos;t have sudo). Verify the install:
-          </p>
-          <Code>{`c0upons version`}</Code>
           <p className="text-sm text-slate-500">
-            You can also <a href="/cli/c0upons" className="text-orange-500 hover:underline">download the script directly</a> and place it anywhere in your <InlineCode>$PATH</InlineCode>.
+            Installs to <IC>/usr/local/bin/c0upons</IC> (or <IC>~/.local/bin</IC> without sudo).
           </p>
 
-          <H3>Dependencies</H3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-2 px-3 text-slate-500 font-medium">Tool</th>
-                  <th className="text-left py-2 px-3 text-slate-500 font-medium">Required</th>
-                  <th className="text-left py-2 px-3 text-slate-500 font-medium">Install</th>
+          <h3 className="text-base font-bold text-slate-800 mt-2">Upgrade</h3>
+          <Code>{`c0upons upgrade`}</Code>
+
+          <h3 className="text-base font-bold text-slate-800 mt-2">Uninstall</h3>
+          <Code>{`c0upons remove`}</Code>
+
+          <h3 className="text-base font-bold text-slate-800 mt-2">Dependencies</h3>
+          <div className="border border-slate-200 rounded-lg overflow-hidden text-sm">
+            <table className="w-full border-collapse">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Tool</th>
+                  <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Required</th>
+                  <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Install</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {[
-                  { tool: 'curl', req: 'Yes', install: 'Usually pre-installed' },
-                  { tool: 'jq', req: 'Yes', install: 'brew install jq / apt install jq' },
-                  { tool: 'python3', req: 'Optional', install: 'Used for URL encoding' },
+                  { tool: 'curl', req: 'Yes', install: 'Pre-installed on most systems' },
+                  { tool: 'jq', req: 'Yes', install: 'brew install jq · apt install jq' },
+                  { tool: 'python3', req: 'Optional', install: 'Used for URL encoding fallback' },
                 ].map((row) => (
-                  <tr key={row.tool} className="border-b border-slate-100">
-                    <td className="py-2 px-3"><InlineCode>{row.tool}</InlineCode></td>
-                    <td className="py-2 px-3 text-slate-600">{row.req}</td>
-                    <td className="py-2 px-3 text-slate-500">{row.install}</td>
+                  <tr key={row.tool}>
+                    <td className="px-4 py-2.5"><IC>{row.tool}</IC></td>
+                    <td className="px-4 py-2.5 text-slate-600">{row.req}</td>
+                    <td className="px-4 py-2.5 text-slate-500">{row.install}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Section>
+        </section>
 
-        <Section id="cli-commands">
-          <H3>Commands</H3>
-          <div className="flex flex-col gap-6">
-            {[
-              {
-                cmd: 'c0upons search <query>',
-                desc: 'Search for coupons matching a query string.',
-                example: 'c0upons search nike\nc0upons search "20% off"',
-              },
-              {
-                cmd: 'c0upons stores',
-                desc: 'List all stores with coupons.',
-                example: 'c0upons stores',
-              },
-              {
-                cmd: 'c0upons store <slug>',
-                desc: 'Show all coupons for a specific store.',
-                example: 'c0upons store nike\nc0upons store amazon',
-              },
-              {
-                cmd: 'c0upons latest',
-                desc: 'Show the most recently added coupons.',
-                example: 'c0upons latest',
-              },
-              {
-                cmd: 'c0upons version',
-                desc: 'Print the installed CLI version.',
-                example: 'c0upons version',
-              },
-            ].map((item) => (
-              <div key={item.cmd} className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <InlineCode>{item.cmd}</InlineCode>
-                </div>
-                <p className="text-sm text-slate-600">{item.desc}</p>
-                <Code>{item.example}</Code>
-              </div>
-            ))}
+        <section id="cli-commands" className="scroll-mt-20 flex flex-col gap-6">
+          <h3 className="text-base font-bold text-slate-800">Commands</h3>
+          {CLI_COMMANDS.map((item) => (
+            <div key={item.cmd} className="flex flex-col gap-2">
+              <IC>{item.cmd}</IC>
+              <p className="text-sm text-slate-600">{item.desc}</p>
+              <Code>{item.example}</Code>
+            </div>
+          ))}
+
+          <div className="mt-2">
+            <h3 className="text-base font-bold text-slate-800 mb-3">Environment</h3>
+            <div className="border border-slate-200 rounded-lg overflow-hidden text-sm">
+              <table className="w-full border-collapse">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Variable</th>
+                    <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Default</th>
+                    <th className="text-left px-4 py-2.5 text-slate-500 font-medium border-b border-slate-200">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-4 py-2.5"><IC>C0UPONS_API</IC></td>
+                    <td className="px-4 py-2.5 text-slate-500 font-mono text-xs">https://c0upons.com/api</td>
+                    <td className="px-4 py-2.5 text-slate-500">Override the API base URL</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+        </section>
 
-          <H3>Environment variables</H3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-2 px-3 text-slate-500 font-medium">Variable</th>
-                  <th className="text-left py-2 px-3 text-slate-500 font-medium">Default</th>
-                  <th className="text-left py-2 px-3 text-slate-500 font-medium">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="py-2 px-3"><InlineCode>C0UPONS_API</InlineCode></td>
-                  <td className="py-2 px-3 text-slate-500">https://c0upons.com/api</td>
-                  <td className="py-2 px-3 text-slate-600">Override the API base URL (e.g. for self-hosting)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </Section>
-
-        {/* REST API */}
-        <Section id="api">
-          <H2>REST API</H2>
+        {/* API */}
+        <section id="api" className="scroll-mt-20 flex flex-col gap-5">
+          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">REST API</h2>
           <p className="text-slate-600 leading-relaxed">
-            The c0upons API is a simple JSON REST API. No authentication is required for read operations.
-            The base URL is <InlineCode>https://c0upons.com/api</InlineCode>.
+            No authentication required for read operations. Base URL:{' '}
+            <IC>https://c0upons.com/api</IC>
           </p>
-        </Section>
+        </section>
 
-        <Section id="api-coupons">
-          <H3>Coupons</H3>
-          <div className="flex flex-col gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge>GET</Badge>
-                <InlineCode>/api/coupons</InlineCode>
-              </div>
-              <p className="text-sm text-slate-600 mb-3">Returns a list of coupons ordered by votes descending.</p>
-              <Code>{`curl https://c0upons.com/api/coupons`}</Code>
-              <p className="text-sm text-slate-500 mt-2">Response:</p>
-              <Code>{`[
+        <section id="api-coupons" className="scroll-mt-20 flex flex-col gap-4">
+          <h3 className="text-base font-bold text-slate-800">Coupons</h3>
+          <Endpoint
+            method="GET"
+            path="/api/coupons"
+            desc="Returns all coupons ordered by votes descending."
+            example="curl https://c0upons.com/api/coupons"
+            response={`[
   {
     "id": 1,
     "store_id": 42,
     "code": "SAVE20",
     "title": "20% off sitewide",
-    "description": "Valid on all orders over $50",
     "discount": "20%",
     "expiry_date": "2025-12-31",
     "verified": 1,
     "votes": 47,
-    "url": null,
     "store_name": "Example Store",
     "store_slug": "example-store"
   }
-]`}</Code>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge>GET</Badge>
-                <InlineCode>/api/coupons/[id]</InlineCode>
-              </div>
-              <p className="text-sm text-slate-600 mb-3">Returns a single coupon by ID.</p>
-              <Code>{`curl https://c0upons.com/api/coupons/1`}</Code>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge>POST</Badge>
-                <InlineCode>/api/coupons</InlineCode>
-              </div>
-              <p className="text-sm text-slate-600 mb-3">Submit a new coupon.</p>
-              <Code>{`curl -X POST https://c0upons.com/api/coupons \\
+]`}
+          />
+          <Endpoint
+            method="GET"
+            path="/api/coupons/[id]"
+            desc="Returns a single coupon by ID."
+            example="curl https://c0upons.com/api/coupons/1"
+          />
+          <Endpoint
+            method="POST"
+            path="/api/coupons"
+            desc="Submit a new coupon."
+            example={`curl -X POST https://c0upons.com/api/coupons \\
   -H "Content-Type: application/json" \\
-  -d '{
-    "store_id": 42,
-    "title": "20% off sitewide",
-    "code": "SAVE20",
-    "discount": "20%",
-    "expiry_date": "2025-12-31"
-  }'`}</Code>
-            </div>
-          </div>
-        </Section>
+  -d '{"store_id":42,"title":"20% off","code":"SAVE20","discount":"20%"}'`}
+          />
+        </section>
 
-        <Section id="api-stores">
-          <H3>Stores</H3>
-          <div className="flex flex-col gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge>GET</Badge>
-                <InlineCode>/api/stores</InlineCode>
-              </div>
-              <p className="text-sm text-slate-600 mb-3">Returns all stores alphabetically.</p>
-              <Code>{`curl https://c0upons.com/api/stores`}</Code>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge>GET</Badge>
-                <InlineCode>/api/stores/[slug]</InlineCode>
-              </div>
-              <p className="text-sm text-slate-600 mb-3">Returns a store and its coupons.</p>
-              <Code>{`curl https://c0upons.com/api/stores/nike`}</Code>
-            </div>
-          </div>
-        </Section>
+        <section id="api-stores" className="scroll-mt-20 flex flex-col gap-4">
+          <h3 className="text-base font-bold text-slate-800">Stores</h3>
+          <Endpoint
+            method="GET"
+            path="/api/stores"
+            desc="Returns all stores alphabetically."
+            example="curl https://c0upons.com/api/stores"
+          />
+          <Endpoint
+            method="GET"
+            path="/api/stores/[slug]"
+            desc="Returns a store and its coupons."
+            example="curl https://c0upons.com/api/stores/nike"
+          />
+        </section>
 
-        <Section id="api-search">
-          <H3>Search</H3>
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge>GET</Badge>
-              <InlineCode>/api/search?q=query</InlineCode>
-            </div>
-            <p className="text-sm text-slate-600 mb-3">
-              Full-text search across coupon titles, descriptions, codes, and store names.
-            </p>
-            <Code>{`curl "https://c0upons.com/api/search?q=nike"`}</Code>
-          </div>
-        </Section>
+        <section id="api-search" className="scroll-mt-20 flex flex-col gap-4">
+          <h3 className="text-base font-bold text-slate-800">Search</h3>
+          <Endpoint
+            method="GET"
+            path="/api/search?q=query"
+            desc="Full-text search across coupon titles, descriptions, codes, and store names."
+            example={`curl "https://c0upons.com/api/search?q=nike"`}
+          />
+        </section>
 
         {/* Contributing */}
-        <Section id="contributing">
-          <H2>Contributing</H2>
+        <section id="contributing" className="scroll-mt-20 flex flex-col gap-5">
+          <h2 className="text-xl font-bold text-slate-900 pb-2 border-b border-slate-100">Contributing</h2>
           <p className="text-slate-600 leading-relaxed">
-            c0upons is open source. Contributions are welcome — whether it&apos;s adding coupon codes via
-            the web app, reporting bugs, or submitting pull requests.
+            c0upons is open source. Contributions are welcome — submit coupons via the web, report
+            bugs, or open a pull request.
           </p>
-          <div className="flex flex-col gap-3">
-            <H3>Submit a coupon via the web</H3>
-            <p className="text-sm text-slate-600">
-              The easiest way to contribute is to{' '}
-              <Link href="/submit" className="text-orange-500 hover:underline font-medium">submit a coupon</Link>{' '}
-              through the web interface.
-            </p>
-
-            <H3>Submit via the CLI</H3>
-            <p className="text-sm text-slate-600">Coming soon — the CLI will support interactive coupon submission.</p>
-
-            <H3>Submit via the API</H3>
-            <Code>{`curl -X POST https://c0upons.com/api/coupons \\
-  -H "Content-Type: application/json" \\
-  -d '{"store_id": 1, "title": "15% off", "code": "GET15"}'`}</Code>
-
-            <H3>Source code</H3>
-            <p className="text-sm text-slate-600">
-              The full source is on{' '}
-              <a
-                href="https://github.com/profullstack/c0upons"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-orange-500 hover:underline font-medium"
-              >
-                GitHub ↗
-              </a>
-              . Open an issue or PR anytime.
-            </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/submit"
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-3 rounded-lg text-center transition-colors"
+            >
+              Submit a coupon →
+            </Link>
+            <a
+              href="https://github.com/profullstack/c0upons"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-semibold px-4 py-3 rounded-lg text-center transition-colors"
+            >
+              View on GitHub ↗
+            </a>
           </div>
-        </Section>
+          <h3 className="text-base font-bold text-slate-800 mt-2">Submit via API</h3>
+          <Code>{`curl -X POST https://c0upons.com/api/coupons \\
+  -H "Content-Type: application/json" \\
+  -d '{"store_id": 1, "title": "15% off everything", "code": "GET15"}'`}</Code>
+        </section>
+
       </div>
     </div>
   );

@@ -27,6 +27,8 @@ usage() {
   echo "  latest            Show latest/trending coupons"
   echo "  stores            List all stores"
   echo "  store <slug>      Show coupons for a store"
+  echo "  upgrade           Upgrade to the latest version (alias: update)"
+  echo "  remove            Uninstall the CLI (alias: uninstall)"
   echo "  version           Print version"
   echo "  help              Show this help"
   echo ""
@@ -154,11 +156,58 @@ cmd_store() {
   done <<< "$coupons"
 }
 
+cmd_upgrade() {
+  local self
+  self="$(command -v c0upons 2>/dev/null || echo "")"
+  if [ -z "$self" ]; then
+    echo -e "${RED}Error:${RESET} could not locate installed c0upons binary."
+    exit 1
+  fi
+  echo -e "Upgrading ${BOLD}c0upons${RESET}…"
+  local tmp
+  tmp=$(mktemp)
+  curl -fsSL "https://c0upons.com/cli/c0upons" -o "$tmp"
+  chmod +x "$tmp"
+  local new_version
+  new_version=$(bash "$tmp" version 2>/dev/null || echo "unknown")
+  if [ -w "$self" ]; then
+    mv "$tmp" "$self"
+  elif command -v sudo &>/dev/null; then
+    sudo mv "$tmp" "$self"
+  else
+    echo -e "${RED}Error:${RESET} no write permission to $self and sudo not available."
+    rm -f "$tmp"
+    exit 1
+  fi
+  echo -e "${GREEN}✓${RESET} Upgraded to ${BOLD}${new_version}${RESET} at ${self}"
+}
+
+cmd_remove() {
+  local self
+  self="$(command -v c0upons 2>/dev/null || echo "")"
+  if [ -z "$self" ]; then
+    echo "c0upons is not installed in PATH."
+    exit 0
+  fi
+  echo -e "Removing ${BOLD}${self}${RESET}…"
+  if [ -w "$self" ]; then
+    rm -f "$self"
+  elif command -v sudo &>/dev/null; then
+    sudo rm -f "$self"
+  else
+    echo -e "${RED}Error:${RESET} no write permission to $self and sudo not available."
+    exit 1
+  fi
+  echo -e "${GREEN}✓${RESET} c0upons removed."
+}
+
 case "${1:-help}" in
-  search)   shift; cmd_search "$@" ;;
-  latest)   cmd_latest ;;
-  stores)   cmd_stores ;;
-  store)    shift; cmd_store "$@" ;;
+  search)             shift; cmd_search "$@" ;;
+  latest)             cmd_latest ;;
+  stores)             cmd_stores ;;
+  store)              shift; cmd_store "$@" ;;
+  upgrade|update)     cmd_upgrade ;;
+  remove|uninstall)   cmd_remove ;;
   version|--version|-v) echo "c0upons v${VERSION}" ;;
   help|--help|-h|"") usage ;;
   *) echo -e "${RED}Unknown command:${RESET} $1\n"; usage; exit 1 ;;
