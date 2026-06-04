@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import StoreCard from '@/components/StoreCard';
 import { getDb } from '@/lib/db';
 import { Store } from '@/lib/types';

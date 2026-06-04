@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import CouponCard from '@/components/CouponCard';
 import SearchBar from '@/components/SearchBar';
 import { getDb } from '@/lib/db';
