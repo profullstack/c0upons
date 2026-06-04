@@ -1,4 +1,5 @@
 import StoreCard from '@/components/StoreCard';
+import { getDb } from '@/lib/db';
 import { Store } from '@/lib/types';
 
 interface StoreWithCount extends Store {
@@ -6,11 +7,18 @@ interface StoreWithCount extends Store {
 }
 
 async function getStores(): Promise<StoreWithCount[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/api/stores`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const db = getDb();
+    return await db.sql`
+      SELECT s.*, COUNT(c.id) AS coupon_count
+      FROM stores s
+      LEFT JOIN coupons c ON c.store_id = s.id
+      GROUP BY s.id
+      ORDER BY s.name ASC
+    `;
+  } catch {
+    return [];
+  }
 }
 
 export default async function StoresPage() {

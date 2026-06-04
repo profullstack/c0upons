@@ -1,5 +1,6 @@
 import CouponCard from '@/components/CouponCard';
 import StoreCard from '@/components/StoreCard';
+import { getDb } from '@/lib/db';
 import { Coupon, Store } from '@/lib/types';
 
 interface StoreWithCount extends Store {
@@ -7,20 +8,35 @@ interface StoreWithCount extends Store {
 }
 
 async function getTrendingCoupons(): Promise<Coupon[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/api/coupons?limit=12`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const db = getDb();
+    return await db.sql`
+      SELECT c.*, s.name AS store_name, s.slug AS store_slug, s.logo_url AS store_logo
+      FROM coupons c
+      JOIN stores s ON s.id = c.store_id
+      ORDER BY c.votes DESC, c.created_at DESC
+      LIMIT 12
+    `;
+  } catch {
+    return [];
+  }
 }
 
 async function getTopStores(): Promise<StoreWithCount[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/api/stores`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) return [];
-  const stores: StoreWithCount[] = await res.json();
-  return stores.slice(0, 12);
+  try {
+    const db = getDb();
+    const stores: StoreWithCount[] = await db.sql`
+      SELECT s.*, COUNT(c.id) AS coupon_count
+      FROM stores s
+      LEFT JOIN coupons c ON c.store_id = s.id
+      GROUP BY s.id
+      ORDER BY s.name ASC
+      LIMIT 12
+    `;
+    return stores;
+  } catch {
+    return [];
+  }
 }
 
 export default async function HomePage() {

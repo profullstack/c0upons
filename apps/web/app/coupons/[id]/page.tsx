@@ -2,14 +2,22 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import CopyButton from '@/components/CopyButton';
+import { getDb } from '@/lib/db';
 import { Coupon } from '@/lib/types';
 
 async function getCoupon(id: string): Promise<Coupon | null> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/api/coupons/${id}`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const db = getDb();
+    const rows = await db.sql`
+      SELECT c.*, s.name AS store_name, s.slug AS store_slug, s.logo_url AS store_logo
+      FROM coupons c
+      JOIN stores s ON s.id = c.store_id
+      WHERE c.id = ${parseInt(id)}
+    `;
+    return rows.length ? rows[0] : null;
+  } catch {
+    return null;
+  }
 }
 
 export default async function CouponPage({ params }: { params: Promise<{ id: string }> }) {

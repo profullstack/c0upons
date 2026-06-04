@@ -1,14 +1,23 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import CouponCard from '@/components/CouponCard';
+import { getDb } from '@/lib/db';
 import { Coupon, Store } from '@/lib/types';
 
 async function getStore(slug: string): Promise<{ store: Store; coupons: Coupon[] } | null> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/api/stores/${slug}`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const db = getDb();
+    const stores = await db.sql`SELECT * FROM stores WHERE slug = ${slug}`;
+    if (!stores.length) return null;
+    const store = stores[0];
+    const coupons = await db.sql`
+      SELECT * FROM coupons WHERE store_id = ${store.id}
+      ORDER BY votes DESC, created_at DESC
+    `;
+    return { store, coupons };
+  } catch {
+    return null;
+  }
 }
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {

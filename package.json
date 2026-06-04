@@ -13,6 +13,7 @@
     "dev:web": "turbo run dev --filter=@c0upons/web",
     "dev:cli": "turbo run dev --filter=@c0upons/cli",
     "build": "turbo run build",
+    "start": "pnpm --filter @c0upons/web run start",
     "build:web": "turbo run build --filter=@c0upons/web",
     "build:cli": "turbo run build --filter=@c0upons/cli",
     "lint": "turbo run lint",
