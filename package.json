@@ -19,6 +19,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "test": "turbo run test",
     "setup:hooks": "git config core.hooksPath .githooks && echo 'Git hooks configured'"
   },
   "devDependencies": {
