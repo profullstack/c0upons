@@ -40,6 +40,8 @@ export default function Footer() {
 
           <div className="flex flex-col gap-3 text-sm">
             <span className="font-semibold text-gray-200 text-xs uppercase tracking-widest">Developers</span>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+            <Link href="/blog/rss.xml" className="hover:text-white transition-colors">RSS Feed</Link>
             <Link href="/docs" className="hover:text-white transition-colors">Documentation</Link>
             <Link href="/docs#cli" className="hover:text-white transition-colors">CLI</Link>
             <Link href="/docs#api" className="hover:text-white transition-colors">REST API</Link>

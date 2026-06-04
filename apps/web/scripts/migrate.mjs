@@ -82,6 +82,22 @@ await db.sql`
 `;
 console.log('  coupon_votes');
 
+await db.sql`
+  CREATE TABLE IF NOT EXISTS blog_posts (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug         TEXT NOT NULL UNIQUE,
+    title        TEXT NOT NULL,
+    excerpt      TEXT,
+    content      TEXT NOT NULL DEFAULT '',
+    cover_image  TEXT,
+    author       TEXT,
+    status       TEXT NOT NULL DEFAULT 'published',
+    published_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`;
+console.log('  blog_posts');
+
 const [{ n }] = await db.sql`SELECT COUNT(*) AS n FROM stores`;
 if (n === 0) {
   console.log('  Seeding sample data...');

@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/docs`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/search`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/about`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/blog`, changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE}/privacy`, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE}/terms`, changeFrequency: 'yearly', priority: 0.3 },
   ];
@@ -28,6 +29,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
+    const posts = await db.sql`SELECT slug, updated_at FROM blog_posts WHERE status = 'published' ORDER BY published_at DESC`;
+    const postRoutes: MetadataRoute.Sitemap = posts.map((p: { slug: string; updated_at: string }) => ({
+      url: `${BASE}/blog/${p.slug}`,
+      lastModified: p.updated_at ? new Date(p.updated_at) : undefined,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
+
     const couponRoutes: MetadataRoute.Sitemap = coupons.map((c: { id: number; created_at: string }) => ({
       url: `${BASE}/coupons/${c.id}`,
       lastModified: c.created_at ? new Date(c.created_at) : undefined,
@@ -35,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...storeRoutes, ...couponRoutes];
+    return [...staticRoutes, ...postRoutes, ...storeRoutes, ...couponRoutes];
   } catch {
     return staticRoutes;
   }
