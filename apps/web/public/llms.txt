@@ -1,0 +1,33 @@
+# c0upons
+
+> Community-powered coupon codes and deals. Find and share the best promo codes for your favourite stores — updated daily by real people.
+
+c0upons is a free, open-source coupon aggregator where anyone can browse deals, copy codes, vote on the best ones, and submit new codes via the web or REST API. It covers hundreds of stores including Amazon, Nike, Walmart, and more.
+
+## Browse
+
+- [Homepage](https://c0upons.com/): Trending coupons and top stores.
+- [All Stores](https://c0upons.com/stores): Browse every store with active coupons.
+- [Search](https://c0upons.com/search): Full-text search across stores, codes, and titles.
+- [Submit a Coupon](https://c0upons.com/submit): Add a new coupon code to the community.
+
+## Developers
+
+- [Documentation](https://c0upons.com/docs): CLI reference and REST API docs.
+- [CLI Install](https://c0upons.com/install.sh): `curl -fsSL https://c0upons.com/install.sh | sh`
+- [REST API](https://c0upons.com/docs#api): JSON endpoints — no auth required for reads.
+
+## Company
+
+- [About](https://c0upons.com/about): Mission, project background, and open-source info.
+- [Privacy Policy](https://c0upons.com/privacy): How we handle your data.
+- [Terms of Service](https://c0upons.com/terms): Rules for using and contributing to c0upons.
+- [GitHub](https://github.com/profullstack/c0upons): Source code and issue tracker.
+
+## Key facts
+
+- **Free:** No account required to browse or search coupons.
+- **Community-driven:** Anyone can submit codes; votes surface the best ones.
+- **Open source:** MIT licensed, source on GitHub.
+- **API:** `GET /api/coupons`, `GET /api/stores`, `GET /api/search?q=query`
+- **Stack:** Next.js 16, SQLite Cloud, Tailwind CSS v4, deployed on Railway.
