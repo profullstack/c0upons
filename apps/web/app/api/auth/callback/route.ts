@@ -4,7 +4,7 @@ import { createSession, COOKIE } from '@/lib/auth';
 const CLIENT_ID = process.env.COINPAY_API_KEY!;
 const CLIENT_SECRET = process.env.COINPAY_CLIENT_SECRET!;
 const BASE = 'https://coinpayportal.com';
-const APP_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://c0upons.up.railway.app';
+const APP_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 const REDIRECT_URI = `${APP_URL}/api/auth/callback`;
 
 export async function GET(req: NextRequest) {
