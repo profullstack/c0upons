@@ -144,6 +144,63 @@ export default async function HomePage() {
         )}
       </section>
 
+      {/* How it works */}
+      <section>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">How c0upons works</h2>
+        <p className="text-sm text-gray-500 mb-6">Save money in three simple steps</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-2">
+            <span className="text-3xl font-black text-orange-400">1</span>
+            <h3 className="font-semibold text-gray-900">Search for a store or product</h3>
+            <p className="text-sm text-gray-500">
+              Type the name of any store or brand into the search bar. c0upons instantly surfaces
+              all available promo codes and discount codes for that retailer, sorted by community votes
+              so the best deals rise to the top.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-3xl font-black text-orange-400">2</span>
+            <h3 className="font-semibold text-gray-900">Copy your coupon code</h3>
+            <p className="text-sm text-gray-500">
+              Click any coupon card to reveal the code and copy it with one tap. Each coupon shows
+              the discount type — percentage off, flat amount, free shipping, or a special bundle
+              deal — so you always know exactly what you're getting before you check out.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-3xl font-black text-orange-400">3</span>
+            <h3 className="font-semibold text-gray-900">Paste at checkout &amp; save</h3>
+            <p className="text-sm text-gray-500">
+              Head to the store, paste the code at checkout, and watch the price drop. After you've
+              used a coupon, come back and upvote it so other shoppers know it still works — or flag
+              it as expired to keep the community's data fresh and accurate.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* About c0upons */}
+      <section className="bg-orange-50 rounded-2xl p-8 md:p-10">
+        <h2 className="text-xl font-bold text-gray-900 mb-3">About c0upons</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600 leading-relaxed">
+          <p>
+            c0upons is a free, community-driven coupon code platform. Unlike traditional deal sites
+            that rely on affiliate-only listings, every coupon on c0upons is submitted, verified, and
+            voted on by real users. That means you see the codes that actually work — not just the ones
+            that earn a commission. Our mission is simple: help everyday shoppers save money at hundreds
+            of online stores without the noise or paywalls.
+          </p>
+          <p>
+            Whether you're shopping for electronics, fashion, groceries, software subscriptions, or
+            travel, c0upons covers a wide range of retailers. You can also use c0upons directly from
+            your terminal with our open-source CLI tool, making it easy to fetch promo codes without
+            ever leaving your workflow. Browse our <Link href="/blog" className="text-orange-600 hover:underline">savings blog</Link> for
+            deal-hunting tips, or <Link href="/submit" className="text-orange-600 hover:underline">submit a coupon code</Link> you've
+            found to help the community save more today.
+          </p>
+        </div>
+      </section>
+
       {/* CLI CTA */}
       <section className="bg-gray-900 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
