@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     siteName: "c0upons",
     type: "website",
     locale: "en_US",
-    images: [{ url: `${BASE}/og-image.png`, width: 1200, height: 630, alt: "c0upons — Community Coupon Codes" }],
+    images: [{ url: `${BASE}/opengraph-image`, width: 1200, height: 630, alt: "c0upons — Community Coupon Codes" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "c0upons — Community Coupon Codes",
     description: "Find and share the best coupon codes and deals, updated daily by the community.",
-    images: [`${BASE}/og-image.png`],
+    images: [`${BASE}/opengraph-image`],
   },
   icons: {
     icon: "/favicon.svg",
