@@ -148,8 +148,8 @@ export default async function HomePage() {
       <section>
         <h2 className="text-xl font-bold text-gray-900 mb-2">How c0upons works</h2>
         <p className="text-sm text-gray-500 mb-6">Save money in three simple steps</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="flex flex-col gap-2">
+        <ol className="grid grid-cols-1 sm:grid-cols-3 gap-6 list-none">
+          <li className="flex flex-col gap-2">
             <span className="text-3xl font-black text-orange-400">1</span>
             <h3 className="font-semibold text-gray-900">Search for a store or product</h3>
             <p className="text-sm text-gray-500">
@@ -157,8 +157,8 @@ export default async function HomePage() {
               all available promo codes and discount codes for that retailer, sorted by community votes
               so the best deals rise to the top.
             </p>
-          </div>
-          <div className="flex flex-col gap-2">
+          </li>
+          <li className="flex flex-col gap-2">
             <span className="text-3xl font-black text-orange-400">2</span>
             <h3 className="font-semibold text-gray-900">Copy your coupon code</h3>
             <p className="text-sm text-gray-500">
@@ -166,8 +166,8 @@ export default async function HomePage() {
               the discount type — percentage off, flat amount, free shipping, or a special bundle
               deal — so you always know exactly what you're getting before you check out.
             </p>
-          </div>
-          <div className="flex flex-col gap-2">
+          </li>
+          <li className="flex flex-col gap-2">
             <span className="text-3xl font-black text-orange-400">3</span>
             <h3 className="font-semibold text-gray-900">Paste at checkout &amp; save</h3>
             <p className="text-sm text-gray-500">
@@ -175,8 +175,8 @@ export default async function HomePage() {
               used a coupon, come back and upvote it so other shoppers know it still works — or flag
               it as expired to keep the community's data fresh and accurate.
             </p>
-          </div>
-        </div>
+          </li>
+        </ol>
       </section>
 
       {/* About c0upons */}
@@ -190,14 +190,38 @@ export default async function HomePage() {
             that earn a commission. Our mission is simple: help everyday shoppers save money at hundreds
             of online stores without the noise or paywalls.
           </p>
-          <p>
-            Whether you're shopping for electronics, fashion, groceries, software subscriptions, or
-            travel, c0upons covers a wide range of retailers. You can also use c0upons directly from
-            your terminal with our open-source CLI tool, making it easy to fetch promo codes without
-            ever leaving your workflow. Browse our <Link href="/blog" className="text-orange-600 hover:underline">savings blog</Link> for
-            deal-hunting tips, or <Link href="/submit" className="text-orange-600 hover:underline">submit a coupon code</Link> you've
-            found to help the community save more today.
-          </p>
+          <div>
+            <p className="mb-3">
+              Whether you're shopping for electronics, fashion, groceries, software subscriptions, or
+              travel, c0upons covers a wide range of retailers. You can also use c0upons directly from
+              your terminal with our open-source CLI tool, making it easy to fetch promo codes without
+              ever leaving your workflow. Browse our <Link href="/blog" className="text-orange-600 hover:underline">savings blog</Link> for
+              deal-hunting tips, or <Link href="/submit" className="text-orange-600 hover:underline">submit a coupon code</Link> you've
+              found to help the community save more today.
+            </p>
+            <ul className="flex flex-col gap-1.5 text-sm text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                No account required — browse and copy codes instantly
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                Community-voted codes surface the best deals first
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                Open-source and free, no paywalls or hidden fees
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                CLI and REST API for developers and power users
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                Covers hundreds of stores across all major categories
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 
