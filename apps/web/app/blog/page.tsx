@@ -17,6 +17,7 @@ interface Post {
   title: string;
   excerpt: string | null;
   cover_image: string | null;
+  thumbnail_image: string | null;
   author: string | null;
   published_at: string;
 }
@@ -25,12 +26,13 @@ async function getPosts(): Promise<Post[]> {
   try {
     const db = getDb();
     return await db.sql`
-      SELECT id, slug, title, excerpt, cover_image, author, published_at
+      SELECT id, slug, title, excerpt, cover_image, thumbnail_image, author, published_at
       FROM blog_posts
       WHERE status = 'published'
       ORDER BY published_at DESC
     `;
-  } catch {
+  } catch (error) {
+    console.error('[blog] failed to load posts', error);
     return [];
   }
 }
@@ -50,36 +52,34 @@ export default async function BlogPage() {
       ) : (
         <div className="grid sm:grid-cols-2 gap-6">
           {posts.map((post) => (
-            <Link
-              key={post.id}
-              href={`/blog/${post.slug}`}
-              className="group border border-gray-200 rounded-xl overflow-hidden hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all"
-            >
-              {post.cover_image && (
-                <div className="relative h-48 bg-gray-100">
-                  <Image
-                    src={post.cover_image}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-5 flex flex-col gap-2">
-                <h2 className="font-bold text-gray-900 group-hover:text-orange-500 transition-colors leading-snug">
-                  {post.title}
-                </h2>
-                {post.excerpt && (
-                  <p className="text-sm text-gray-500 line-clamp-2">{post.excerpt}</p>
+            <Link key={post.id} href={`/blog/${post.slug}`} className="group">
+              <article className="h-full border border-gray-200 rounded-xl overflow-hidden hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all">
+                {(post.thumbnail_image || post.cover_image) && (
+                  <div className="relative h-48 bg-gray-100">
+                    <Image
+                      src={post.thumbnail_image || post.cover_image!}
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 )}
-                <div className="flex items-center gap-2 mt-auto pt-2 text-xs text-gray-400">
-                  {post.author && <span>{post.author}</span>}
-                  {post.author && <span>·</span>}
-                  <time dateTime={post.published_at}>
-                    {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </time>
+                <div className="p-5 flex flex-col gap-2">
+                  <h2 className="font-bold text-gray-900 group-hover:text-orange-500 transition-colors leading-snug">
+                    {post.title}
+                  </h2>
+                  {post.excerpt && (
+                    <p className="text-sm text-gray-500 line-clamp-2">{post.excerpt}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-auto pt-2 text-xs text-gray-400">
+                    {post.author && <span>{post.author}</span>}
+                    {post.author && <span>·</span>}
+                    <time dateTime={post.published_at}>
+                      {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </time>
+                  </div>
                 </div>
-              </div>
+              </article>
             </Link>
           ))}
         </div>

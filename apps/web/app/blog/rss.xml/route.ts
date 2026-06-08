@@ -16,7 +16,9 @@ export async function GET() {
       ORDER BY published_at DESC
       LIMIT 50
     `;
-  } catch { /* return empty feed on DB error */ }
+  } catch (error) {
+    console.error('[blog] failed to load rss posts', error);
+  }
 
   const items = posts.map((p) => `
     <item>

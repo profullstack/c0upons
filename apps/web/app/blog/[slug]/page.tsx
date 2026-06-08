@@ -13,6 +13,8 @@ interface Post {
   excerpt: string | null;
   content: string;
   cover_image: string | null;
+  thumbnail_image: string | null;
+  banner_image: string | null;
   author: string | null;
   published_at: string;
   updated_at: string;
@@ -26,7 +28,8 @@ async function getPost(slug: string): Promise<Post | null> {
       WHERE slug = ${slug} AND status = 'published'
     `;
     return rows.length ? rows[0] : null;
-  } catch {
+  } catch (error) {
+    console.error('[blog] failed to load post', error);
     return null;
   }
 }
@@ -47,7 +50,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: 'article',
       publishedTime: post.published_at,
       modifiedTime: post.updated_at,
-      images: post.cover_image ? [{ url: post.cover_image }] : [],
+      images: (post.banner_image || post.cover_image || post.thumbnail_image)
+        ? [{ url: post.banner_image || post.cover_image || post.thumbnail_image! }]
+        : [],
     },
   };
 }
@@ -62,20 +67,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <Link href="/blog" className="text-sm text-orange-500 hover:underline">← All posts</Link>
 
       <article className="flex flex-col gap-6">
-        {post.cover_image && (
-          <div className="relative h-64 rounded-2xl overflow-hidden bg-gray-100">
-            <Image src={post.cover_image} alt={post.title} fill className="object-cover" />
+        {(post.banner_image || post.cover_image) && (
+          <div className="relative h-64 rounded-2xl overflow-hidden bg-gray-100 sm:h-80">
+            <Image src={post.banner_image || post.cover_image!} alt={post.title} fill className="object-cover" priority />
           </div>
         )}
 
-        <header className="flex flex-col gap-3">
-          <h1 className="text-3xl font-black text-gray-900 leading-tight">{post.title}</h1>
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            {post.author && <span className="font-medium text-gray-600">{post.author}</span>}
-            {post.author && <span>·</span>}
-            <time dateTime={post.published_at}>
-              {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </time>
+        <header className="flex flex-col gap-4 sm:flex-row">
+          {post.thumbnail_image && (
+            <div className="relative mt-1 size-20 shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:size-24">
+              <Image src={post.thumbnail_image} alt="" fill className="object-cover" />
+            </div>
+          )}
+          <div className="flex min-w-0 flex-col gap-3">
+            <h1 className="text-3xl font-black text-gray-900 leading-tight">{post.title}</h1>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
+              {post.author && <span className="font-medium text-gray-600">{post.author}</span>}
+              {post.author && <span>·</span>}
+              <time dateTime={post.published_at}>
+                {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </time>
+            </div>
           </div>
         </header>
 

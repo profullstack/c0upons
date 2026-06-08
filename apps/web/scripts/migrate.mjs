@@ -2,7 +2,7 @@
  * Database migration — creates tables and optionally seeds sample data.
  * Run with: pnpm db:migrate  (from apps/web)
  *
- * Requires SQLITECLOUD_URL in apps/web/.env.local or as an env var.
+ * Requires SQLITECLOUD_URL in the repo root .env or as an env var.
  */
 import { Database } from '@sqlitecloud/drivers';
 import { readFileSync } from 'fs';
@@ -11,15 +11,15 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Load .env.local manually (no dotenv dep in web)
+// Load the repo root .env manually (no dotenv dep in web).
 try {
-  const envPath = resolve(__dirname, '../.env.local');
+  const envPath = resolve(__dirname, '../../..', '.env');
   const lines = readFileSync(envPath, 'utf-8').split('\n');
   for (const line of lines) {
     const [k, ...rest] = line.split('=');
     if (k && rest.length) process.env[k.trim()] ??= rest.join('=').trim();
   }
-} catch { /* no .env.local — fall through to existing env */ }
+} catch { /* no root .env — fall through to existing env */ }
 
 const url = process.env.SQLITECLOUD_URL;
 if (!url) {
@@ -27,7 +27,7 @@ if (!url) {
   process.exit(1);
 }
 
-const db = new Database(url);
+const db = new Database({ connectionstring: url, usewebsocket: true });
 
 console.log('Running migrations...');
 
@@ -90,12 +90,22 @@ await db.sql`
     excerpt      TEXT,
     content      TEXT NOT NULL DEFAULT '',
     cover_image  TEXT,
+    thumbnail_image TEXT,
+    banner_image TEXT,
     author       TEXT,
     status       TEXT NOT NULL DEFAULT 'published',
+    source       TEXT,
+    source_id    TEXT,
     published_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `;
+await addColumn(() => db.sql`ALTER TABLE blog_posts ADD COLUMN thumbnail_image TEXT`);
+await addColumn(() => db.sql`ALTER TABLE blog_posts ADD COLUMN banner_image TEXT`);
+await addColumn(() => db.sql`ALTER TABLE blog_posts ADD COLUMN source TEXT`);
+await addColumn(() => db.sql`ALTER TABLE blog_posts ADD COLUMN source_id TEXT`);
+await db.sql`CREATE INDEX IF NOT EXISTS idx_blog_posts_status_published ON blog_posts(status, published_at)`;
+await db.sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_blog_posts_source_id ON blog_posts(source, source_id)`;
 console.log('  blog_posts');
 
 await db.sql`
@@ -140,3 +150,12 @@ if (n === 0) {
 
 console.log('\nDone.');
 process.exit(0);
+
+async function addColumn(run) {
+  try {
+    await run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/duplicate column|already exists/i.test(message)) throw error;
+  }
+}

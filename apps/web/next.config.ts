@@ -1,4 +1,8 @@
 import type { NextConfig } from 'next';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+loadRootEnv();
 
 // @serwist/next uses a webpack plugin that is incompatible with Turbopack
 // (Next.js 16 default). Disabled until Turbopack support lands in serwist.
@@ -44,3 +48,21 @@ const nextConfig: NextConfig = {
 };
 
 export default withSerwist(nextConfig);
+
+function loadRootEnv() {
+  const envPath = [
+    resolve(process.cwd(), '.env'),
+    resolve(process.cwd(), '../..', '.env'),
+  ].find((path) => existsSync(path));
+  if (!envPath) return;
+
+  for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const separator = trimmed.indexOf('=');
+    if (separator === -1) continue;
+    const key = trimmed.slice(0, separator).trim();
+    const value = trimmed.slice(separator + 1).trim().replace(/^(['"])(.*)\1$/, '$2');
+    process.env[key] ??= value;
+  }
+}
