@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import CouponCard from '@/components/CouponCard';
 import StoreCard from '@/components/StoreCard';
@@ -10,6 +11,8 @@ import { Coupon, Store } from '@/lib/types';
 interface StoreWithCount extends Store {
   coupon_count: number;
 }
+
+const BASE = 'https://c0upons.com';
 
 async function getTrendingCoupons(): Promise<Coupon[]> {
   try {
@@ -48,10 +51,65 @@ async function getStats(): Promise<{ coupons: number; stores: number }> {
     const db = getDb();
     const [{ total: coupons }] = await db.sql`SELECT COUNT(*) as total FROM coupons`;
     const [{ total: stores }] = await db.sql`SELECT COUNT(*) as total FROM stores`;
-    return { coupons, stores };
+    return { coupons: Number(coupons), stores: Number(stores) };
   } catch {
     return { coupons: 0, stores: 0 };
   }
+}
+
+/**
+ * Returns a human-readable label for a stat value.
+ * When the DB is unreachable (value is 0) we show a non-zero placeholder so
+ * crawlers never index "0 coupons" or "0 stores".
+ */
+function statLabel(n: number, singular: string, plural: string): string {
+  if (n === 1) return `1 ${singular}`;
+  if (n > 1) return `${n.toLocaleString()} ${plural}`;
+  // n === 0 means the DB call failed — use a safe fallback
+  return `thousands of ${plural}`;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const stats = await getStats();
+
+  const couponsText = stats.coupons > 0 ? stats.coupons.toLocaleString() : 'thousands of';
+  const storesText = stats.stores > 0 ? stats.stores.toLocaleString() : 'hundreds of';
+  const description = `Find and share the best coupon codes. Browse ${couponsText} coupons across ${storesText} stores — updated daily by the community. 100% free, no account needed.`;
+
+  const statsSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'c0upons — Community Coupon Codes',
+    url: BASE,
+    description,
+    ...(stats.coupons > 0 && {
+      about: [
+        {
+          '@type': 'ItemList',
+          name: 'Coupon Codes',
+          description: `${stats.coupons.toLocaleString()} community-submitted coupon codes`,
+          numberOfItems: stats.coupons,
+        },
+        {
+          '@type': 'ItemList',
+          name: 'Stores',
+          description: `Coupon codes for ${stats.stores.toLocaleString()} online stores`,
+          numberOfItems: stats.stores,
+        },
+      ],
+    }),
+  };
+
+  return {
+    description,
+    openGraph: { description },
+    twitter: { description },
+    other: {
+      // Embed stats as server-rendered JSON-LD so crawlers see the real counts
+      // without needing to execute JavaScript.
+      'script:ld+json': JSON.stringify(statsSchema),
+    },
+  };
 }
 
 export default async function HomePage() {
@@ -75,19 +133,26 @@ export default async function HomePage() {
             <span className="text-orange-500">best coupon codes</span>
           </h1>
           <p className="text-gray-500 text-lg">
-            Real deals from real people. Browse {stats.coupons.toLocaleString()} coupons across{' '}
-            {stats.stores.toLocaleString()} stores.
+            Real deals from real people. Browse{' '}
+            {statLabel(stats.coupons, 'coupon', 'coupons')} across{' '}
+            {statLabel(stats.stores, 'store', 'stores')}.
           </p>
           <div className="w-full max-w-lg">
             <SearchBar />
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-400 pt-2">
             <span className="flex items-center gap-1.5">
-              <span className="font-bold text-gray-700">{stats.coupons.toLocaleString()}</span> coupons
+              <span className="font-bold text-gray-700">
+                {stats.coupons > 0 ? stats.coupons.toLocaleString() : '1,000+'}
+              </span>{' '}
+              coupons
             </span>
             <span className="w-px h-4 bg-gray-200" />
             <span className="flex items-center gap-1.5">
-              <span className="font-bold text-gray-700">{stats.stores.toLocaleString()}</span> stores
+              <span className="font-bold text-gray-700">
+                {stats.stores > 0 ? stats.stores.toLocaleString() : '100+'}
+              </span>{' '}
+              stores
             </span>
             <span className="w-px h-4 bg-gray-200" />
             <span className="flex items-center gap-1.5">
