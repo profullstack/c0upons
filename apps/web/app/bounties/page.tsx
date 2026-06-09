@@ -44,6 +44,25 @@ const STATUS_COLORS: Record<string, string> = {
   paid: 'bg-gray-100 text-gray-500 border-gray-200',
 };
 
+const FAQ = [
+  {
+    q: 'What is a coupon bounty?',
+    a: 'A bounty is a cash reward posted by a shopper who wants a working coupon code for a specific store. Anyone can submit a valid code to claim the reward.',
+  },
+  {
+    q: 'How much can I earn?',
+    a: 'Bounty creators set their own reward amount (minimum $0.10). Rewards are paid instantly to your CoinPay DID as soon as a valid code is accepted.',
+  },
+  {
+    q: 'How do I post a bounty?',
+    a: 'Connect your CoinPay account, then click "Post Bounty". Name the store, describe the discount you\'re looking for, and set your reward amount.',
+  },
+  {
+    q: 'What happens if no code is found?',
+    a: 'Open bounties remain listed until a valid code is submitted or the creator cancels. Funds are only released when a working code is confirmed.',
+  },
+];
+
 export default async function BountiesPage() {
   const [bounties, did] = await Promise.all([getBounties(), getSessionDid()]);
   const storeName = (b: Bounty) => b.store_name_resolved ?? b.store_name ?? 'Any store';
@@ -92,9 +111,64 @@ export default async function BountiesPage() {
 
       {/* Bounty list */}
       {bounties.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl">
-          <p className="text-gray-400 font-medium">No open bounties yet.</p>
-          <p className="text-sm text-gray-400 mt-1">Be the first to post one!</p>
+        <div className="flex flex-col gap-8">
+          <div className="text-center py-14 border border-dashed border-gray-200 rounded-2xl">
+            <p className="text-gray-500 font-medium text-lg">No open bounties yet.</p>
+            <p className="text-sm text-gray-400 mt-1 mb-5">
+              Be the first to post one — set any reward amount and let the community find your code.
+            </p>
+            {did ? (
+              <Link
+                href="/bounties/new"
+                className="inline-flex bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Post the first bounty
+              </Link>
+            ) : (
+              <a
+                href="/api/auth/coinpay?returnTo=/bounties/new"
+                className="inline-flex bg-gray-900 hover:bg-gray-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Connect &amp; post a bounty
+              </a>
+            )}
+          </div>
+
+          {/* FAQ — keeps the page content-rich for crawlers even when list is empty */}
+          <section>
+            <h2 className="text-xl font-bold text-gray-900 mb-5">Frequently asked questions</h2>
+            <dl className="flex flex-col gap-5">
+              {FAQ.map(({ q, a }) => (
+                <div key={q} className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                  <dt className="font-semibold text-gray-900 text-sm mb-1">{q}</dt>
+                  <dd className="text-sm text-gray-500 leading-relaxed">{a}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          {/* Benefits */}
+          <section className="bg-orange-50 rounded-2xl p-8">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Why use c0upons bounties?</h2>
+            <ul className="flex flex-col gap-2 text-sm text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                Instant crypto payouts — no waiting for bank transfers or gift cards
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                You only pay when a working code is confirmed — no risk of paying for duds
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                The whole community is incentivised to find the best coupon for your store
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold mt-0.5">✓</span>
+                Found codes are added to c0upons so future shoppers benefit too
+              </li>
+            </ul>
+          </section>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
