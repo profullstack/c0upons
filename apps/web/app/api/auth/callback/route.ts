@@ -14,7 +14,11 @@ export async function GET(req: NextRequest) {
 
   const storedState = req.cookies.get('cp_state')?.value;
   const codeVerifier = req.cookies.get('cp_pkce')?.value;
-  const returnTo = req.cookies.get('cp_return')?.value ?? '/';
+  let returnTo = req.cookies.get('cp_return')?.value ?? '/';
+  // Prevent open redirect — only allow relative paths
+  if (!returnTo.startsWith('/') || returnTo.startsWith('//')) {
+    returnTo = '/';
+  }
 
   const fail = (msg: string) =>
     NextResponse.redirect(new URL(`/?auth_error=${encodeURIComponent(msg)}`, APP_URL));
