@@ -4,6 +4,15 @@ import { getDb } from '@/lib/db';
 
 const BASE = 'https://c0upons.com';
 
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 export async function GET() {
   let posts: Array<{ slug: string; title: string; excerpt: string | null; published_at: string; author: string | null }> = [];
 
@@ -23,10 +32,10 @@ export async function GET() {
   const items = posts.map((p) => `
     <item>
       <title><![CDATA[${p.title}]]></title>
-      <link>${BASE}/blog/${p.slug}</link>
-      <guid isPermaLink="true">${BASE}/blog/${p.slug}</guid>
+      <link>${BASE}/blog/${encodeURIComponent(p.slug)}</link>
+      <guid isPermaLink="true">${BASE}/blog/${encodeURIComponent(p.slug)}</guid>
       ${p.excerpt ? `<description><![CDATA[${p.excerpt}]]></description>` : ''}
-      ${p.author ? `<author>${p.author}</author>` : ''}
+      ${p.author ? `<author>${escapeXml(p.author)}</author>` : ''}
       <pubDate>${new Date(p.published_at).toUTCString()}</pubDate>
     </item>`).join('');
 
