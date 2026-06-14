@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { getSessionDid } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -23,6 +24,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const did = await getSessionDid();
+  if (!did) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+
   try {
     const body = await req.json();
     const { store_id, code, title, description, discount, expiry_date, url } = body;

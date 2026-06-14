@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { getSessionDid } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -18,7 +19,10 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const did = await getSessionDid();
+  if (!did) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+
   try {
     const body = await req.json();
     const { name, slug, logo_url, website, category_id } = body;
