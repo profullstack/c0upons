@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     const db = getDb();
 
-    // Check for duplicate
+    // Check for existing vote first (fast path for user feedback)
     const existing = await db.sql`
       SELECT id FROM coupon_votes WHERE coupon_id = ${id} AND voter_did = ${did}
     `;
@@ -23,7 +23,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'already_voted' }, { status: 409 });
     }
 
-    await db.sql`INSERT INTO coupon_votes (coupon_id, voter_did) VALUES (${id}, ${did})`;
+    // Atomic insert — UNIQUE(coupon_id, voter_did) constraint prevents
+    // duplicates from concurrent requests; OR IGNORE handles the race
+    // gracefully instead of throwing a constraint violation error
+    await db.sql`INSERT OR IGNORE INTO coupon_votes (coupon_id, voter_did) VALUES (${id}, ${did})`;
     await db.sql`UPDATE coupons SET votes = votes + 1 WHERE id = ${id}`;
 
     const rows = await db.sql`SELECT votes FROM coupons WHERE id = ${id}`;
