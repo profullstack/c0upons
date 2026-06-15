@@ -30,13 +30,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const coupons = await db.sql`SELECT * FROM coupons WHERE id = ${coupon_id}`;
   if (!coupons.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
 
-  // Mark bounty as claimed
+  // Mark bounty as claimed — atomic WHERE prevents race conditions
   await db.sql`
     UPDATE bounties
     SET status = 'claimed', coupon_id = ${coupon_id}, claimer_did = ${did},
         updated_at = ${new Date().toISOString()}
-    WHERE id = ${bountyId}
+    WHERE id = ${bountyId} AND status IN ('open', 'funded')
   `;
+
+  // Verify the claim succeeded (handles concurrent claim race)
+  const verify = await db.sql`SELECT claimer_did FROM bounties WHERE id = ${bountyId}`;
+  if (verify.length && verify[0].claimer_did !== did) {
+    return NextResponse.json({ error: 'Bounty was already claimed by another user' }, { status: 409 });
+  }
 
   // Attempt payout to claimer via web wallet
   // Docs: POST /api/web-wallet/:id/prepare-tx then /broadcast
