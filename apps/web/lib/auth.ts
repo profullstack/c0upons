@@ -2,7 +2,10 @@ import 'server-only';
 import { cookies } from 'next/headers';
 
 const COOKIE = 'cp_session';
-const SESSION_SECRET = process.env.SESSION_SECRET ?? 'dev-secret-change-me';
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET) {
+  throw new Error('SESSION_SECRET environment variable is required');
+}
 const enc = new TextEncoder();
 
 async function hmac(data: string): Promise<string> {
