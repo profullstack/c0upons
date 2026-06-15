@@ -9,7 +9,11 @@ function base64url(buf: ArrayBuffer | Uint8Array): string {
 }
 
 export async function GET(req: NextRequest) {
-  const returnTo = req.nextUrl.searchParams.get('returnTo') ?? '/';
+  let returnTo = req.nextUrl.searchParams.get('returnTo') ?? '/';
+  // Prevent open redirect — only allow relative paths
+  if (!returnTo.startsWith('/') || returnTo.startsWith('//')) {
+    returnTo = '/';
+  }
 
   // PKCE
   const verifierBytes = crypto.getRandomValues(new Uint8Array(32));
