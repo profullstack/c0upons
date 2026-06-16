@@ -2,15 +2,23 @@ import 'server-only';
 import { cookies } from 'next/headers';
 
 const COOKIE = 'cp_session';
-const SESSION_SECRET = process.env.SESSION_SECRET;
-if (!SESSION_SECRET) {
-  throw new Error('SESSION_SECRET environment variable is required');
-}
 const enc = new TextEncoder();
+
+// Resolve the secret lazily (at request time) rather than at module import.
+// Throwing at import breaks `next build` page-data collection, which imports
+// route modules in an environment without runtime secrets. This still enforces
+// #20's intent: no insecure fallback, and requests fail if the secret is unset.
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error('SESSION_SECRET environment variable is required');
+  }
+  return secret;
+}
 
 async function hmac(data: string): Promise<string> {
   const key = await crypto.subtle.importKey(
-    'raw', enc.encode(SESSION_SECRET),
+    'raw', enc.encode(getSessionSecret()),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
