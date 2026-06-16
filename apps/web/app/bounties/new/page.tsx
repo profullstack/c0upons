@@ -50,9 +50,9 @@ export default function NewBountyPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Failed to create bounty'); return; }
-      // If CoinPay returned a checkout URL, redirect there to fund the bounty
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url;
+      // If CoinPay returned a payment URL, redirect there to fund the bounty
+      if (data.pay_url) {
+        window.location.href = data.pay_url;
       } else {
         router.push(`/bounties/${data.id}`);
       }
