@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getSessionDid } from '@/lib/auth';
+import { generatePublicId } from '@/lib/id';
 
 const COINPAY_BASE = 'https://coinpayportal.com';
 const API_KEY = process.env.COINPAY_API_KEY!;
@@ -38,11 +39,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const db = getDb();
+    const publicId = generatePublicId();
 
-    // Insert bounty as 'open' first to get an ID
+    // Insert bounty as 'open' with a non-sequential public id for URLs.
     await db.sql`
-      INSERT INTO bounties (creator_did, store_id, store_name, title, description, reward_usd, status)
+      INSERT INTO bounties (public_id, creator_did, store_id, store_name, title, description, reward_usd, status)
       VALUES (
+        ${publicId},
         ${did},
         ${store_id ?? null},
         ${store_name?.trim() ?? null},
@@ -51,9 +54,6 @@ export async function POST(req: NextRequest) {
         ${reward},
         'open'
       )
-    `;
-    const [{ id: bountyId }] = await db.sql`
-      SELECT id FROM bounties WHERE creator_did = ${did} ORDER BY id DESC LIMIT 1
     `;
 
     // Create a CoinPay payment for the creator to fund the bounty
@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
           amount_usd: reward,
           currency: 'usdc_pol',   // default to USDC on Polygon — low fees
           description: `Coupon bounty: ${title.trim()}`,
-          redirect_url: `${APP_URL}/bounties/${bountyId}?funded=1`,
-          metadata: { type: 'bounty_fund', bounty_id: bountyId, creator_did: did },
+          redirect_url: `${APP_URL}/bounties/${publicId}?funded=1`,
+          metadata: { type: 'bounty_fund', bounty_id: publicId, creator_did: did },
         }),
       });
 
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         paymentId = data.payment_id ?? data.id ?? null;
         paymentAddress = data.payment_address ?? null;
         if (paymentId) {
-          await db.sql`UPDATE bounties SET payment_id = ${paymentId} WHERE id = ${bountyId}`;
+          await db.sql`UPDATE bounties SET payment_id = ${paymentId} WHERE public_id = ${publicId}`;
         }
       } else {
         const err = await res.text();
@@ -91,7 +91,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      id: bountyId,
+      id: publicId,
+      public_id: publicId,
       payment_id: paymentId,
       payment_address: paymentAddress,
       pay_url: paymentId ? `${COINPAY_BASE}/pay/${paymentId}` : null,

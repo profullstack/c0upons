@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
           UPDATE bounties
           SET status = 'funded', payment_id = ${event.data?.payment_id ?? event.id},
               updated_at = ${new Date().toISOString()}
-          WHERE id = ${meta.bounty_id} AND status = 'open'
+          WHERE public_id = ${meta.bounty_id} AND status = 'open'
         `;
         console.log('Bounty funded:', meta.bounty_id);
       }

@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       FROM bounties b
       LEFT JOIN stores s ON s.id = b.store_id
       LEFT JOIN coupons c ON c.id = b.coupon_id
-      WHERE b.id = ${parseInt(id)}
+      WHERE b.public_id = ${id}
     `;
     if (!rows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(rows[0]);

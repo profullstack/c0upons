@@ -8,6 +8,16 @@ import { Database } from '@sqlitecloud/drivers';
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { randomBytes } from 'node:crypto';
+
+// Mirror of apps/web/lib/id.ts — short, URL-safe, non-sequential public ids.
+const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function generatePublicId(length = 12) {
+  const bytes = randomBytes(length);
+  let id = '';
+  for (let i = 0; i < length; i++) id += ID_ALPHABET[bytes[i] % ID_ALPHABET.length];
+  return id;
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -117,6 +127,7 @@ console.log('  blog_posts');
 await db.sql`
   CREATE TABLE IF NOT EXISTS bounties (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_id     TEXT,
     creator_did   TEXT NOT NULL,
     store_id      INTEGER REFERENCES stores(id),
     store_name    TEXT,
@@ -131,6 +142,15 @@ await db.sql`
     updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `;
+// public_id: non-sequential URL identifier (added after initial release).
+await addColumn(() => db.sql`ALTER TABLE bounties ADD COLUMN public_id TEXT`);
+// Backfill any rows missing a public_id (existing bounties created pre-migration).
+const needIds = await db.sql`SELECT id FROM bounties WHERE public_id IS NULL OR public_id = ''`;
+for (const row of needIds) {
+  await db.sql`UPDATE bounties SET public_id = ${generatePublicId()} WHERE id = ${row.id}`;
+}
+if (needIds.length) console.log(`  bounties: backfilled ${needIds.length} public_id(s)`);
+await db.sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_bounties_public_id ON bounties(public_id)`;
 console.log('  bounties');
 
 const [{ n }] = await db.sql`SELECT COUNT(*) AS n FROM stores`;
