@@ -9,6 +9,7 @@ import BountyClaim from './BountyClaim';
 
 interface Bounty {
   id: number;
+  public_id: string;
   title: string;
   description: string | null;
   reward_usd: number;
@@ -24,24 +25,25 @@ interface Bounty {
   created_at: string;
 }
 
-async function getBounty(id: number): Promise<Bounty | null> {
-  try {
-    const db = getDb();
-    const rows = await db.sql`
-      SELECT b.*, COALESCE(s.name, b.store_name) AS display_store,
-             c.code AS coupon_code, c.title AS coupon_title
-      FROM bounties b
-      LEFT JOIN stores s ON s.id = b.store_id
-      LEFT JOIN coupons c ON c.id = b.coupon_id
-      WHERE b.id = ${id}
-    `;
-    return rows.length ? rows[0] : null;
-  } catch { return null; }
+// Look up by public_id. We intentionally do NOT swallow DB errors here: a
+// thrown query (e.g. paused DB node) must surface as an error, not a 404 —
+// otherwise a real, existing bounty gets reported as "not found".
+async function getBounty(publicId: string): Promise<Bounty | null> {
+  const db = getDb();
+  const rows = await db.sql`
+    SELECT b.*, COALESCE(s.name, b.store_name) AS display_store,
+           c.code AS coupon_code, c.title AS coupon_title
+    FROM bounties b
+    LEFT JOIN stores s ON s.id = b.store_id
+    LEFT JOIN coupons c ON c.id = b.coupon_id
+    WHERE b.public_id = ${publicId}
+  `;
+  return rows.length ? rows[0] : null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const bounty = await getBounty(parseInt(id));
+  const bounty = await getBounty(id);
   if (!bounty) return { title: 'Bounty not found' };
   return {
     title: `Bounty: ${bounty.title}`,
@@ -61,7 +63,7 @@ const COINPAY_BASE = 'https://coinpayportal.com';
 
 export default async function BountyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [bounty, did] = await Promise.all([getBounty(parseInt(id)), getSessionDid()]);
+  const [bounty, did] = await Promise.all([getBounty(id), getSessionDid()]);
   if (!bounty) notFound();
 
   const status = STATUS_LABELS[bounty.status] ?? { label: bounty.status, color: 'bg-gray-100 text-gray-600 border-gray-200' };
@@ -132,12 +134,12 @@ export default async function BountyPage({ params }: { params: Promise<{ id: str
         )}
 
         {canClaim && (
-          <BountyClaim bountyId={bounty.id} storeId={bounty.store_id} />
+          <BountyClaim bountyPublicId={bounty.public_id} storeId={bounty.store_id} />
         )}
 
         {!did && ['open', 'funded'].includes(bounty.status) && (
           <a
-            href={`/api/auth/coinpay?returnTo=/bounties/${bounty.id}`}
+            href={`/api/auth/coinpay?returnTo=/bounties/${bounty.public_id}`}
             className="w-full text-center bg-gray-900 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
           >
             Connect with CoinPay to claim

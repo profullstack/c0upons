@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 
 interface Bounty {
   id: number;
+  public_id: string;
   title: string;
   description: string | null;
   reward_usd: number;
@@ -175,7 +176,7 @@ export default async function BountiesPage() {
           {bounties.map((b) => (
             <Link
               key={b.id}
-              href={`/bounties/${b.id}`}
+              href={`/bounties/${b.public_id}`}
               className="group border border-gray-200 rounded-xl p-5 flex items-center gap-4 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-50 transition-all"
             >
               <div className="flex-1 min-w-0">

@@ -11,14 +11,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!did) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 
   const { id } = await params;
-  const bountyId = parseInt(id);
   const { coupon_id } = await req.json();
   if (!coupon_id) return NextResponse.json({ error: 'coupon_id is required' }, { status: 400 });
 
   const db = getDb();
-  const rows = await db.sql`SELECT * FROM bounties WHERE id = ${bountyId}`;
+  const rows = await db.sql`SELECT * FROM bounties WHERE public_id = ${id}`;
   if (!rows.length) return NextResponse.json({ error: 'Bounty not found' }, { status: 404 });
   const bounty = rows[0];
+  const bountyId = bounty.id;
 
   if (!['open', 'funded'].includes(bounty.status)) {
     return NextResponse.json({ error: `Bounty is already ${bounty.status}` }, { status: 409 });

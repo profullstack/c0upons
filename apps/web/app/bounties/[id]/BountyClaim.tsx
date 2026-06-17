@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 interface Coupon { id: number; title: string; code: string | null; }
 
-export default function BountyClaim({ bountyId, storeId }: { bountyId: number; storeId: number | null }) {
+export default function BountyClaim({ bountyPublicId, storeId }: { bountyPublicId: string; storeId: number | null }) {
   const router = useRouter();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedId, setSelectedId] = useState('');
@@ -23,7 +23,7 @@ export default function BountyClaim({ bountyId, storeId }: { bountyId: number; s
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`/api/bounties/${bountyId}/claim`, {
+      const res = await fetch(`/api/bounties/${bountyPublicId}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ coupon_id: parseInt(selectedId) }),
