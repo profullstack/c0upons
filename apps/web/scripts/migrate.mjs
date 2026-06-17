@@ -62,13 +62,19 @@ await db.sql`
     title       TEXT NOT NULL,
     description TEXT,
     discount    TEXT,
+    discount_type  TEXT,
+    discount_value REAL,
     expiry_date TEXT,
     url         TEXT,
+    image_url   TEXT,
     votes       INTEGER NOT NULL DEFAULT 0,
     verified    INTEGER NOT NULL DEFAULT 0,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `;
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_type TEXT`);
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_value REAL`);
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN image_url TEXT`);
 console.log('  coupons');
 
 await db.sql`

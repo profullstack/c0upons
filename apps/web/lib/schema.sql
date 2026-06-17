@@ -21,10 +21,13 @@ CREATE TABLE IF NOT EXISTS coupons (
   title TEXT NOT NULL,
   description TEXT,
   discount TEXT,
+  discount_type TEXT,
+  discount_value REAL,
   expiry_date TEXT,
   verified INTEGER DEFAULT 0,
   votes INTEGER DEFAULT 0,
   url TEXT,
+  image_url TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
 

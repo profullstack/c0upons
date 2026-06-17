@@ -14,6 +14,8 @@ export interface Store {
   created_at: string;
 }
 
+export type DiscountType = 'percent' | 'fixed';
+
 export interface Coupon {
   id: number;
   store_id: number;
@@ -21,10 +23,13 @@ export interface Coupon {
   title: string;
   description: string | null;
   discount: string | null;
+  discount_type: DiscountType | null;
+  discount_value: number | null;
   expiry_date: string | null;
   verified: number;
   votes: number;
   url: string | null;
+  image_url: string | null;
   created_at: string;
   store_name?: string;
   store_slug?: string;
