@@ -79,12 +79,8 @@ export default function SubmitPage() {
     e.preventDefault();
     setError('');
 
-    if (!url.trim()) {
-      setError('A product URL is required.');
-      return;
-    }
     if (!scraped || !scraped.title.trim()) {
-      setError('Fetch the listing details first (or add a title).');
+      setError('Add a title (fetch it from a link, or enter details manually).');
       return;
     }
 
@@ -94,7 +90,7 @@ export default function SubmitPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          url: url.trim(),
+          url: url.trim() || null,
           code: code.trim() || null,
           discount_type: discountValue.trim() ? discountType : null,
           discount_value: discountValue.trim() || null,
@@ -137,13 +133,13 @@ export default function SubmitPage() {
     <div className="max-w-lg mx-auto">
       <h1 className="text-3xl font-black text-gray-900 mb-2">Submit a Coupon</h1>
       <p className="text-gray-500 mb-8 text-sm">
-        Paste the product link and your coupon code — we&apos;ll pull the listing details for you.
+        Paste a product link to auto-fill the details — or enter them manually. The link is optional.
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Product URL + fetch */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col gap-4">
-          <h2 className="font-bold text-gray-800">Product link</h2>
+          <h2 className="font-bold text-gray-800">Product link <span className="font-normal text-gray-400 text-sm">(optional)</span></h2>
           <div className="flex gap-2">
             <input
               type="url"
@@ -151,7 +147,6 @@ export default function SubmitPage() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className={`flex-1 ${inputClass}`}
-              required
             />
             <button
               type="button"
@@ -165,6 +160,15 @@ export default function SubmitPage() {
           <p className="text-xs text-gray-400">
             We use AI to read the title, store, and image from the page. You can edit anything below.
           </p>
+          {!scraped && (
+            <button
+              type="button"
+              onClick={() => setScraped({ ...EMPTY })}
+              className="self-start text-sm text-orange-500 hover:underline"
+            >
+              or enter details manually →
+            </button>
+          )}
         </div>
 
         {/* AI-scraped, editable preview */}

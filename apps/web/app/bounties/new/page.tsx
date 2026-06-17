@@ -16,6 +16,7 @@ export default function NewBountyPage() {
   const [form, setForm] = useState({
     title: '',
     description: '',
+    url: '',
     reward_usd: '0.10',
     store_id: '',
     store_name: '',
@@ -43,6 +44,7 @@ export default function NewBountyPage() {
         body: JSON.stringify({
           title: form.title.trim(),
           description: form.description.trim() || null,
+          url: form.url.trim() || null,
           reward_usd: reward,
           store_id: form.store_id ? parseInt(form.store_id) : null,
           store_name: !form.store_id ? form.store_name.trim() : null,
@@ -137,6 +139,13 @@ export default function NewBountyPage() {
             onChange={e => set('description', e.target.value)}
             rows={3}
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+          />
+          <input
+            type="url"
+            placeholder="Link (optional) — e.g. the product or store page"
+            value={form.url}
+            onChange={e => set('url', e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
           <div>
             <label className="text-xs text-gray-500 mb-1 block">Reward amount (USD, min $0.10) *</label>
