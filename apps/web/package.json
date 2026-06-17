@@ -14,6 +14,7 @@
     "clean": "rm -rf .next out node_modules"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "@serwist/next": "^9.5.0",
     "@sqlitecloud/drivers": "^1.0.880",
     "next": "16.2.7",
