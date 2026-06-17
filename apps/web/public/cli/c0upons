@@ -6,8 +6,13 @@
 
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
+# Website root (for login + share links). Defaults to BASE_URL without /api.
+WEB_URL="${C0UPONS_WEB:-${BASE_URL%/api}}"
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/c0upons"
+TOKEN_FILE="${CONFIG_DIR}/token"
 
 BOLD="\033[1m"
 DIM="\033[2m"
@@ -27,6 +32,10 @@ usage() {
   echo "  latest            Show latest/trending coupons"
   echo "  stores            List all stores"
   echo "  store <slug>      Show coupons for a store"
+  echo "  login             Connect your CoinPay account"
+  echo "  logout            Forget saved credentials"
+  echo "  submit            Submit a coupon (requires login)"
+  echo "  bounty            Post a coupon bounty (requires login)"
   echo "  upgrade           Upgrade to the latest version (alias: update)"
   echo "  remove            Uninstall the CLI (alias: uninstall)"
   echo "  version           Print version"
@@ -34,9 +43,9 @@ usage() {
   echo ""
   echo -e "${BOLD}EXAMPLES${RESET}"
   echo "  c0upons search nike"
-  echo "  c0upons latest"
-  echo "  c0upons stores"
-  echo "  c0upons store adidas"
+  echo "  c0upons login"
+  echo "  c0upons submit --store Nike --title '20% off sitewide' --code SAVE20 --percent 20 --url https://nike.com"
+  echo "  c0upons bounty --store Adidas --title 'Need a 30% off code' --reward 1.00"
   echo ""
   echo -e "${DIM}Override API: export C0UPONS_API=http://localhost:3000/api${RESET}"
   echo -e "${DIM}Docs: https://c0upons.com/docs${RESET}"
@@ -50,6 +59,35 @@ require_jq() {
     echo "           https://jqlang.github.io/jq/"
     exit 1
   fi
+}
+
+require_auth() {
+  if [ ! -f "$TOKEN_FILE" ] || [ ! -s "$TOKEN_FILE" ]; then
+    echo -e "${RED}Not logged in.${RESET} Run: ${BOLD}c0upons login${RESET}"
+    exit 1
+  fi
+  TOKEN=$(cat "$TOKEN_FILE")
+}
+
+# api_post <path> <json-payload> — sends an authenticated POST.
+# On success, leaves the response body in $API_BODY. On failure, prints the
+# error and exits.
+api_post() {
+  local path="$1" payload="$2" resp code
+  resp=$(curl -sS -w $'\n%{http_code}' -X POST "${BASE_URL}${path}" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -d "$payload") || { echo -e "${RED}Network error.${RESET} Could not reach ${BASE_URL}."; exit 1; }
+  code=$(printf '%s' "$resp" | tail -n1)
+  API_BODY=$(printf '%s' "$resp" | sed '$d')
+  if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
+    return 0
+  fi
+  local msg
+  msg=$(printf '%s' "$API_BODY" | jq -r '.error // empty' 2>/dev/null || true)
+  echo -e "${RED}Error (${code}):${RESET} ${msg:-request failed}"
+  [ "$code" = "401" ] && echo -e "  Run: ${BOLD}c0upons login${RESET}"
+  exit 1
 }
 
 urlencode() {
@@ -156,6 +194,126 @@ cmd_store() {
   done <<< "$coupons"
 }
 
+cmd_login() {
+  require_jq
+  echo -e "To connect the CLI, open this URL and sign in with CoinPay:"
+  echo ""
+  echo -e "  ${BOLD}${WEB_URL}/cli-auth${RESET}"
+  echo ""
+  printf "Paste the code here: "
+  local token
+  read -r token
+  token=$(printf '%s' "$token" | tr -d '[:space:]')
+  if [ -z "$token" ]; then
+    echo -e "${RED}No code entered.${RESET}"
+    exit 1
+  fi
+  local did
+  did=$(curl -fsSL -H "Authorization: Bearer ${token}" "${BASE_URL}/auth/me" 2>/dev/null | jq -r '.did // empty') || true
+  if [ -z "$did" ]; then
+    echo -e "${RED}That code didn't work.${RESET} Make sure you copied the whole thing."
+    exit 1
+  fi
+  mkdir -p "$CONFIG_DIR"
+  printf '%s' "$token" > "$TOKEN_FILE"
+  chmod 600 "$TOKEN_FILE"
+  echo -e "${GREEN}✓${RESET} Logged in as ${BOLD}${did}${RESET}"
+}
+
+cmd_logout() {
+  if [ -f "$TOKEN_FILE" ]; then
+    rm -f "$TOKEN_FILE"
+    echo -e "${GREEN}✓${RESET} Logged out."
+  else
+    echo "Not logged in."
+  fi
+}
+
+cmd_submit() {
+  require_jq
+  require_auth
+  local title="" store="" code="" url="" website="" description="" expiry="" dtype="" dvalue=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --title)            title="${2:-}"; shift 2 ;;
+      --store)            store="${2:-}"; shift 2 ;;
+      --code)             code="${2:-}"; shift 2 ;;
+      --url)              url="${2:-}"; shift 2 ;;
+      --website)          website="${2:-}"; shift 2 ;;
+      --description|--desc) description="${2:-}"; shift 2 ;;
+      --expiry)           expiry="${2:-}"; shift 2 ;;
+      --percent)          dtype="percent"; dvalue="${2:-}"; shift 2 ;;
+      --off)              dtype="fixed"; dvalue="${2:-}"; shift 2 ;;
+      *) echo -e "${RED}Unknown option:${RESET} $1"; exit 1 ;;
+    esac
+  done
+  if [ -z "$title" ]; then
+    echo "Usage: c0upons submit --title <title> [--store <name>] [--code <code>]"
+    echo "                      [--percent <n> | --off <n>] [--url <url>]"
+    echo "                      [--description <d>] [--expiry YYYY-MM-DD]"
+    exit 1
+  fi
+  local payload
+  payload=$(jq -n \
+    --arg title "$title" --arg store "$store" --arg code "$code" --arg url "$url" \
+    --arg website "$website" --arg description "$description" --arg expiry "$expiry" \
+    --arg dtype "$dtype" --arg dvalue "$dvalue" \
+    '{
+      title: $title,
+      store_name:     (if $store == "" then null else $store end),
+      code:           (if $code == "" then null else $code end),
+      url:            (if $url == "" then null else $url end),
+      store_website:  (if $website == "" then null else $website end),
+      description:    (if $description == "" then null else $description end),
+      expiry_date:    (if $expiry == "" then null else $expiry end),
+      discount_type:  (if $dtype == "" then null else $dtype end),
+      discount_value: (if $dvalue == "" then null else $dvalue end)
+    }')
+  api_post "/coupons" "$payload"
+  echo -e "${GREEN}✓${RESET} Coupon submitted!"
+}
+
+cmd_bounty() {
+  require_jq
+  require_auth
+  local title="" store="" reward="" url="" description=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --title)            title="${2:-}"; shift 2 ;;
+      --store)            store="${2:-}"; shift 2 ;;
+      --reward)           reward="${2:-}"; shift 2 ;;
+      --url)              url="${2:-}"; shift 2 ;;
+      --description|--desc) description="${2:-}"; shift 2 ;;
+      *) echo -e "${RED}Unknown option:${RESET} $1"; exit 1 ;;
+    esac
+  done
+  if [ -z "$title" ] || [ -z "$store" ] || [ -z "$reward" ]; then
+    echo "Usage: c0upons bounty --title <title> --store <name> --reward <usd>"
+    echo "                      [--url <url>] [--description <d>]"
+    exit 1
+  fi
+  local payload
+  payload=$(jq -n \
+    --arg title "$title" --arg store "$store" --arg reward "$reward" \
+    --arg url "$url" --arg description "$description" \
+    '{
+      title: $title,
+      store_name: $store,
+      reward_usd: $reward,
+      url:         (if $url == "" then null else $url end),
+      description: (if $description == "" then null else $description end)
+    }')
+  api_post "/bounties" "$payload"
+  local pubid pay_url
+  pubid=$(printf '%s' "$API_BODY" | jq -r '.public_id // .id // empty')
+  pay_url=$(printf '%s' "$API_BODY" | jq -r '.pay_url // empty')
+  echo -e "${GREEN}✓${RESET} Bounty posted!"
+  [ -n "$pubid" ] && echo -e "  ${DIM}${WEB_URL}/bounties/${pubid}${RESET}"
+  if [ -n "$pay_url" ]; then
+    echo -e "  Fund it to make it live: ${BOLD}${pay_url}${RESET}"
+  fi
+}
+
 cmd_upgrade() {
   local self
   self="$(command -v c0upons 2>/dev/null || echo "")"
@@ -206,6 +364,10 @@ case "${1:-help}" in
   latest)             cmd_latest ;;
   stores)             cmd_stores ;;
   store)              shift; cmd_store "$@" ;;
+  login)              cmd_login ;;
+  logout)             cmd_logout ;;
+  submit)             shift; cmd_submit "$@" ;;
+  bounty)             shift; cmd_bounty "$@" ;;
   upgrade|update)     cmd_upgrade ;;
   remove|uninstall)   cmd_remove ;;
   version|--version|-v) echo "c0upons v${VERSION}" ;;
