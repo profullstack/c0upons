@@ -1,5 +1,5 @@
 import 'server-only';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 const COOKIE = 'cp_session';
 const enc = new TextEncoder();
@@ -45,6 +45,14 @@ export async function parseSession(value: string): Promise<string | null> {
 
 export async function getSessionDid(): Promise<string | null> {
   try {
+    // CLI / API clients authenticate with the same signed session token sent as
+    // `Authorization: Bearer <token>`. Browser requests use the httpOnly cookie.
+    const hdrs = await headers();
+    const auth = hdrs.get('authorization');
+    if (auth?.startsWith('Bearer ')) {
+      const did = await parseSession(auth.slice(7).trim());
+      if (did) return did;
+    }
     const jar = await cookies();
     const val = jar.get(COOKIE)?.value;
     if (!val) return null;
