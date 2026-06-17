@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const did = await getSessionDid();
   if (!did) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 
-  const { title, description, reward_usd, store_id, store_name } = await req.json();
+  const { title, description, url, reward_usd, store_id, store_name } = await req.json();
 
   if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   const reward = parseFloat(reward_usd);
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // Insert bounty as 'open' with a non-sequential public id for URLs.
     await db.sql`
-      INSERT INTO bounties (public_id, creator_did, store_id, store_name, title, description, reward_usd, status)
+      INSERT INTO bounties (public_id, creator_did, store_id, store_name, title, description, url, reward_usd, status)
       VALUES (
         ${publicId},
         ${did},
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         ${store_name?.trim() ?? null},
         ${title.trim()},
         ${description?.trim() ?? null},
+        ${url?.trim() || null},
         ${reward},
         'open'
       )

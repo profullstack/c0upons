@@ -85,6 +85,7 @@ await db.sql`
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_type TEXT`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_value REAL`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN image_url TEXT`);
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN url TEXT`);
 console.log('  coupons');
 
 await db.sql`
@@ -133,6 +134,7 @@ await db.sql`
     store_name    TEXT,
     title         TEXT NOT NULL,
     description   TEXT,
+    url           TEXT,
     reward_usd    REAL NOT NULL,
     status        TEXT NOT NULL DEFAULT 'open',
     payment_id    TEXT,
@@ -144,6 +146,8 @@ await db.sql`
 `;
 // public_id: non-sequential URL identifier (added after initial release).
 await addColumn(() => db.sql`ALTER TABLE bounties ADD COLUMN public_id TEXT`);
+// url: optional reference link for the bounty (added after initial release).
+await addColumn(() => db.sql`ALTER TABLE bounties ADD COLUMN url TEXT`);
 // Backfill any rows missing a public_id (existing bounties created pre-migration).
 const needIds = await db.sql`SELECT id FROM bounties WHERE public_id IS NULL OR public_id = ''`;
 for (const row of needIds) {

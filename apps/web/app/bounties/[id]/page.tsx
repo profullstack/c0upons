@@ -12,6 +12,7 @@ interface Bounty {
   public_id: string;
   title: string;
   description: string | null;
+  url: string | null;
   reward_usd: number;
   status: string;
   store_id: number | null;
@@ -101,6 +102,18 @@ export default async function BountyPage({ params }: { params: Promise<{ id: str
         {/* Description */}
         {bounty.description && (
           <p className="text-gray-600 leading-relaxed border-t border-gray-100 pt-4">{bounty.description}</p>
+        )}
+
+        {/* Reference link */}
+        {bounty.url && (
+          <a
+            href={bounty.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-orange-500 hover:underline break-all"
+          >
+            {bounty.url} ↗
+          </a>
         )}
 
         {/* Claimed coupon */}

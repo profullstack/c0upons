@@ -95,12 +95,9 @@ export async function POST(req: NextRequest) {
       image_url,
     } = body;
 
-    if (!url) {
-      return NextResponse.json({ error: 'url is required' }, { status: 400 });
-    }
     if (!title) {
       return NextResponse.json(
-        { error: 'title is required (scrape the URL first)' },
+        { error: 'title is required' },
         { status: 400 }
       );
     }
@@ -125,7 +122,7 @@ export async function POST(req: NextRequest) {
       )
       VALUES (
         ${storeId}, ${code?.trim() || null}, ${title}, ${description ?? null}, ${discount},
-        ${type}, ${value}, ${expiry_date || null}, ${url}, ${image_url ?? null}
+        ${type}, ${value}, ${expiry_date || null}, ${url?.trim() || null}, ${image_url ?? null}
       )
     `;
     return NextResponse.json({ success: true }, { status: 201 });
