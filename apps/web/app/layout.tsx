@@ -82,7 +82,7 @@ export default function RootLayout({
         <main className="max-w-7xl mx-auto px-4 py-10">{children}</main>
         <Footer />
         <Script data-site="e615d01b-b475-4df6-8d72-c6f60acfcf04" src="https://crawlproof.com/stats.js" strategy="afterInteractive" />
-      </body>
+      <script async src="https://feedback.profullstack.com/embed/profullstack-feedback.js" data-property="c0upons.com"></script></body>
     </html>
   );
 }
