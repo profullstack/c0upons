@@ -20,8 +20,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const bounty = rows[0];
   const bountyId = bounty.id;
 
-  if (!['open', 'funded'].includes(bounty.status)) {
-    return NextResponse.json({ error: `Bounty is already ${bounty.status}` }, { status: 409 });
+  // Only a funded bounty may be claimed. A bounty stays 'open' until the CoinPay
+  // funding webhook flips it to 'funded'; accepting 'open' here let an unfunded
+  // bounty (abandoned/failed creator payment) be claimed and still trigger a real
+  // payout from the merchant wallet below.
+  if (bounty.status !== 'funded') {
+    return NextResponse.json({ error: `Bounty is not funded yet (status: ${bounty.status})` }, { status: 409 });
   }
   if (bounty.creator_did === did) {
     return NextResponse.json({ error: 'Cannot claim your own bounty' }, { status: 400 });
@@ -35,7 +39,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     UPDATE bounties
     SET status = 'claimed', coupon_id = ${coupon_id}, claimer_did = ${did},
         updated_at = ${new Date().toISOString()}
-    WHERE id = ${bountyId} AND status IN ('open', 'funded')
+    WHERE id = ${bountyId} AND status = 'funded'
   `;
 
   // Verify the claim succeeded (handles concurrent claim race)
