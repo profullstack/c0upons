@@ -29,6 +29,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const coupons = await db.sql`SELECT * FROM coupons WHERE id = ${coupon_id}`;
   if (!coupons.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
+  const coupon = coupons[0];
+
+  // The submitted coupon must actually be for the store this bounty targets,
+  // otherwise any unrelated coupon would satisfy the claim and trigger a payout.
+  // A bounty targets either a canonical store_id or a free-text store_name.
+  let couponStoreName: string | null = null;
+  if (coupon.store_id) {
+    const s = await db.sql`SELECT name FROM stores WHERE id = ${coupon.store_id}`;
+    couponStoreName = s.length ? s[0].name : null;
+  }
+  const storeMatches = bounty.store_id
+    ? coupon.store_id === bounty.store_id
+    : !!bounty.store_name &&
+      !!couponStoreName &&
+      couponStoreName.trim().toLowerCase() === bounty.store_name.trim().toLowerCase();
+  if (!storeMatches) {
+    return NextResponse.json({ error: 'Coupon does not match the bounty store' }, { status: 400 });
+  }
+
+  // A coupon may only be used to claim one bounty — otherwise a single coupon
+  // could be reused to drain the reward of every bounty for that store.
+  const alreadyUsed = await db.sql`
+    SELECT 1 FROM bounties WHERE coupon_id = ${coupon_id} AND id != ${bountyId} LIMIT 1
+  `;
+  if (alreadyUsed.length) {
+    return NextResponse.json({ error: 'This coupon has already been used to claim a bounty' }, { status: 409 });
+  }
 
   // Validate coupon store matches bounty store (prevents cross-store payout exploitation)
   const coupon = coupons[0];
