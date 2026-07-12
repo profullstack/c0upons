@@ -5,6 +5,7 @@ import Link from 'next/link';
 import CouponCard from '@/components/CouponCard';
 import StoreCard from '@/components/StoreCard';
 import SearchBar from '@/components/SearchBar';
+import AdUnit from '@/components/AdUnit';
 import { getDb } from '@/lib/db';
 import { Coupon, Store } from '@/lib/types';
 
@@ -186,6 +187,9 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Advertisement */}
+      <AdUnit />
 
       {/* Top Stores */}
       <section>
