@@ -30,6 +30,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const coupons = await db.sql`SELECT * FROM coupons WHERE id = ${coupon_id}`;
   if (!coupons.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
 
+  // Validate coupon store matches bounty store (prevents cross-store payout exploitation)
+  const coupon = coupons[0];
+  if (bounty.store_id && coupon.store_id !== bounty.store_id) {
+    return NextResponse.json(
+      { error: 'Coupon store does not match bounty store' },
+      { status: 400 }
+    );
+  }
+
+  // Prevent coupon reuse — a coupon can only claim one bounty
+  const reused = await db.sql`SELECT id FROM bounties WHERE coupon_id = ${coupon_id} AND status IN ('claimed', 'paid')`;
+  if (reused.length) {
+    return NextResponse.json(
+      { error: 'This coupon has already been used to claim another bounty' },
+      { status: 409 }
+    );
+  }
+
   // Mark bounty as claimed — atomic WHERE prevents race conditions
   await db.sql`
     UPDATE bounties
