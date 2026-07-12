@@ -20,8 +20,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const bounty = rows[0];
   const bountyId = bounty.id;
 
-  if (!['open', 'funded'].includes(bounty.status)) {
-    return NextResponse.json({ error: `Bounty is already ${bounty.status}` }, { status: 409 });
+  // Only a funded bounty may be claimed. A bounty stays 'open' until the CoinPay
+  // funding webhook flips it to 'funded'; accepting 'open' here let an unfunded
+  // bounty (abandoned/failed creator payment) be claimed and still trigger a real
+  // payout from the merchant wallet below.
+  if (bounty.status !== 'funded') {
+    return NextResponse.json({ error: `Bounty is not funded yet (status: ${bounty.status})` }, { status: 409 });
   }
   if (bounty.creator_did === did) {
     return NextResponse.json({ error: 'Cannot claim your own bounty' }, { status: 400 });
@@ -29,23 +33,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const coupons = await db.sql`SELECT * FROM coupons WHERE id = ${coupon_id}`;
   if (!coupons.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
-
-  // Validate coupon store matches bounty store (prevents cross-store payout exploitation)
   const coupon = coupons[0];
-  if (bounty.store_id && coupon.store_id !== bounty.store_id) {
-    return NextResponse.json(
-      { error: 'Coupon store does not match bounty store' },
-      { status: 400 }
-    );
+
+  // The submitted coupon must actually be for the store this bounty targets,
+  // otherwise any unrelated coupon would satisfy the claim and trigger a payout.
+  // A bounty targets either a canonical store_id or a free-text store_name.
+  let couponStoreName: string | null = null;
+  if (coupon.store_id) {
+    const s = await db.sql`SELECT name FROM stores WHERE id = ${coupon.store_id}`;
+    couponStoreName = s.length ? s[0].name : null;
+  }
+  const storeMatches = bounty.store_id
+    ? coupon.store_id === bounty.store_id
+    : !!bounty.store_name &&
+      !!couponStoreName &&
+      couponStoreName.trim().toLowerCase() === bounty.store_name.trim().toLowerCase();
+  if (!storeMatches) {
+    return NextResponse.json({ error: 'Coupon does not match the bounty store' }, { status: 400 });
   }
 
-  // Prevent coupon reuse — a coupon can only claim one bounty
-  const reused = await db.sql`SELECT id FROM bounties WHERE coupon_id = ${coupon_id} AND status IN ('claimed', 'paid')`;
-  if (reused.length) {
-    return NextResponse.json(
-      { error: 'This coupon has already been used to claim another bounty' },
-      { status: 409 }
-    );
+  // A coupon may only be used to claim one bounty — otherwise a single coupon
+  // could be reused to drain the reward of every bounty for that store.
+  const alreadyUsed = await db.sql`
+    SELECT 1 FROM bounties WHERE coupon_id = ${coupon_id} AND id != ${bountyId} LIMIT 1
+  `;
+  if (alreadyUsed.length) {
+    return NextResponse.json({ error: 'This coupon has already been used to claim a bounty' }, { status: 409 });
   }
 
   // Mark bounty as claimed — atomic WHERE prevents race conditions
@@ -53,7 +66,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     UPDATE bounties
     SET status = 'claimed', coupon_id = ${coupon_id}, claimer_did = ${did},
         updated_at = ${new Date().toISOString()}
-    WHERE id = ${bountyId} AND status IN ('open', 'funded')
+    WHERE id = ${bountyId} AND status = 'funded'
   `;
 
   // Verify the claim succeeded (handles concurrent claim race)
