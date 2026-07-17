@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createCoinPayClient } from '@profullstack/stack/coinpay';
 import { getDb } from '@/lib/db';
 import { getSessionDid } from '@/lib/auth';
 import { generatePublicId } from '@/lib/id';
@@ -63,30 +64,20 @@ export async function POST(req: NextRequest) {
     let paymentId: string | null = null;
 
     try {
-      const res = await fetch(`${COINPAY_BASE}/api/payments/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
-        body: JSON.stringify({
-          business_id: MERCHANT_ID,
-          amount_usd: reward,
-          currency: 'usdc_pol',   // default to USDC on Polygon — low fees
-          description: `Coupon bounty: ${title.trim()}`,
-          redirect_url: `${APP_URL}/bounties/${publicId}?funded=1`,
-          metadata: { type: 'bounty_fund', bounty_id: publicId, creator_did: did },
-        }),
+      const coinpay = createCoinPayClient({ apiKey: API_KEY, baseUrl: COINPAY_BASE });
+      const checkout = await coinpay.createCheckout({
+        amountUsd: reward,
+        currency: 'usdc_pol',   // default to USDC on Polygon — low fees
+        // Keep the API's implicit default ('crypto'); 'both' would require Stripe Connect.
+        paymentMethod: 'crypto',
+        description: `Coupon bounty: ${title.trim()}`,
+        redirectUrl: `${APP_URL}/bounties/${publicId}?funded=1`,
+        metadata: { type: 'bounty_fund', bounty_id: publicId, creator_did: did },
+        businessId: MERCHANT_ID,
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        paymentId = data.payment_id ?? data.id ?? null;
-        paymentAddress = data.payment_address ?? null;
-        if (paymentId) {
-          await db.sql`UPDATE bounties SET payment_id = ${paymentId} WHERE public_id = ${publicId}`;
-        }
-      } else {
-        const err = await res.text();
-        console.error('CoinPay payment create error:', err);
-      }
+      paymentId = checkout.paymentId;
+      paymentAddress = checkout.payment.payment_address ?? null;
+      await db.sql`UPDATE bounties SET payment_id = ${paymentId} WHERE public_id = ${publicId}`;
     } catch (e) {
       console.error('CoinPay payment create failed:', e);
     }
