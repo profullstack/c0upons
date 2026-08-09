@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionDid } from '@/lib/auth';
 import { getDb } from '@/lib/db';
+import { dbErrorResponse } from '@/lib/api-error';
 
 export async function POST(req: NextRequest) {
   const did = await getSessionDid();
@@ -33,6 +34,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, votes: rows[0]?.votes ?? 0 });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to vote' }, { status: 500 });
+    return dbErrorResponse(err, 'Failed to vote');
   }
 }

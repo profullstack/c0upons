@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCoinPayClient } from '@profullstack/stack/coinpay';
 import { getDb } from '@/lib/db';
+import { dbErrorResponse } from '@/lib/api-error';
 import { getSessionDid } from '@/lib/auth';
 import { generatePublicId } from '@/lib/id';
 
@@ -23,7 +24,7 @@ export async function GET() {
     return NextResponse.json(bounties);
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: 'Failed to fetch bounties' }, { status: 500 });
+    return dbErrorResponse(e, 'Failed to fetch bounties');
   }
 }
 
@@ -91,6 +92,6 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
   } catch (e) {
     console.error('Failed to create bounty:', e);
-    return NextResponse.json({ error: 'Failed to create bounty. Please try again.' }, { status: 500 });
+    return dbErrorResponse(e, 'Failed to create bounty. Please try again.');
   }
 }

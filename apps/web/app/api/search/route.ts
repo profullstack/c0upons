@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { dbErrorResponse } from '@/lib/api-error';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -24,6 +25,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(results);
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
+    return dbErrorResponse(err, 'Search failed');
   }
 }

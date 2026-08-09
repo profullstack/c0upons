@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-VERSION="1.1.0"
+VERSION="1.2.0"
 BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
 # Website root (for login + share links). Defaults to BASE_URL without /api.
 WEB_URL="${C0UPONS_WEB:-${BASE_URL%/api}}"
@@ -90,6 +90,35 @@ api_post() {
   exit 1
 }
 
+# api_get <path> — fetches a public endpoint.
+# On success, leaves the response body in $API_BODY. On failure, prints the
+# server's own message and exits. The read commands used to pipe `curl -fsSL`
+# straight into jq, so an outage surfaced as `curl: (22) The requested URL
+# returned error: 500` — which says nothing about whose fault it is or whether
+# retrying helps. The API distinguishes those cases now; this reads them out.
+api_get() {
+  local path="$1" resp code
+  # -L keeps the redirect-following the previous `curl -fsSL` had, so a
+  # canonical-host redirect still resolves instead of surfacing as a bare 301.
+  resp=$(curl -sSL -w $'\n%{http_code}' "${BASE_URL}${path}") \
+    || { echo -e "${RED}Network error.${RESET} Could not reach ${BASE_URL}."; exit 1; }
+  code=$(printf '%s' "$resp" | tail -n1)
+  API_BODY=$(printf '%s' "$resp" | sed '$d')
+  if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
+    return 0
+  fi
+  local msg
+  msg=$(printf '%s' "$API_BODY" | jq -r '.error // empty' 2>/dev/null || true)
+  # 503 is the API saying "down, not broken" — worth its own wording so people
+  # retry rather than reinstall the CLI or file a bug.
+  if [ "$code" = "503" ]; then
+    echo -e "${ORANGE}c0upons is temporarily unavailable.${RESET} ${msg:-Please try again shortly.}"
+  else
+    echo -e "${RED}Error (${code}):${RESET} ${msg:-request failed}"
+  fi
+  exit 1
+}
+
 urlencode() {
   local raw="$1"
   if command -v python3 &>/dev/null; then
@@ -130,7 +159,8 @@ cmd_search() {
   local encoded
   encoded=$(urlencode "$q")
   local results
-  results=$(curl -fsSL "${BASE_URL}/search?q=${encoded}")
+  api_get "/search?q=${encoded}"
+  results="$API_BODY"
   local count
   count=$(echo "$results" | jq 'length')
   if [ "$count" -eq 0 ]; then
@@ -142,14 +172,18 @@ cmd_search() {
   while IFS= read -r row; do
     print_coupon "$row"
     i=$((i + 1))
-    [ "$i" -ge 20 ] && break
+    # `[ … ] && break` would leave its own status 1 behind on the last pass
+    # through the loop, and that becomes the script's exit code — so a search
+    # that printed results perfectly still reported failure to `&&`/CI.
+    if [ "$i" -ge 20 ]; then break; fi
   done < <(echo "$results" | jq -c '.[]')
 }
 
 cmd_latest() {
   require_jq
   local results
-  results=$(curl -fsSL "${BASE_URL}/coupons")
+  api_get "/coupons"
+  results="$API_BODY"
   local count
   count=$(echo "$results" | jq 'length')
   echo -e "${BOLD}Latest ${count} coupon(s)${RESET}\n"
@@ -157,14 +191,16 @@ cmd_latest() {
   while IFS= read -r row; do
     print_coupon "$row"
     i=$((i + 1))
-    [ "$i" -ge 10 ] && break
+    # Same trailing-status trap as cmd_search above.
+    if [ "$i" -ge 10 ]; then break; fi
   done < <(echo "$results" | jq -c '.[]')
 }
 
 cmd_stores() {
   require_jq
   local results
-  results=$(curl -fsSL "${BASE_URL}/stores")
+  api_get "/stores"
+  results="$API_BODY"
   local count
   count=$(echo "$results" | jq 'length')
   echo -e "${BOLD}${count} stores${RESET}\n"
@@ -179,7 +215,8 @@ cmd_store() {
     exit 1
   fi
   local result
-  result=$(curl -fsSL "${BASE_URL}/stores/${slug}")
+  api_get "/stores/${slug}"
+  result="$API_BODY"
   local name
   name=$(echo "$result" | jq -r '.name // "Unknown"')
   local coupons

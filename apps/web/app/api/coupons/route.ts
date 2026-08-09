@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { dbErrorResponse } from '@/lib/api-error';
 import { getSessionDid } from '@/lib/auth';
 import type { DiscountType } from '@/lib/types';
 
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(coupons);
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to fetch coupons' }, { status: 500 });
+    return dbErrorResponse(err, 'Failed to fetch coupons');
   }
 }
 
@@ -128,6 +129,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to create coupon' }, { status: 500 });
+    return dbErrorResponse(err, 'Failed to create coupon');
   }
 }
