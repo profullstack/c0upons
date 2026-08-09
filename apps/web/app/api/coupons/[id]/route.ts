@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { dbErrorResponse } from '@/lib/api-error';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,6 +16,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json(rows[0]);
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to fetch coupon' }, { status: 500 });
+    return dbErrorResponse(err, 'Failed to fetch coupon');
   }
 }

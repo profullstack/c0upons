@@ -24,6 +24,20 @@ function isDisconnect(err: unknown): boolean {
   );
 }
 
+// SQLite Cloud parks a free-tier node after a stretch of inactivity. Every
+// query then fails with error 10010 until someone restarts it from the
+// dashboard, and the node refuses new sockets too — so reconnecting cannot fix
+// it. That is why this is deliberately NOT folded into isDisconnect() above:
+// retrying a paused node just pays the connection cost twice before failing
+// identically. Callers use it to tell "c0upons is down" (transient, 503) apart
+// from "c0upons is broken" (a real 500).
+export function isDbPaused(err: unknown): boolean {
+  const code = (err as { errorCode?: string | number } | null)?.errorCode;
+  if (code != null && String(code) === '10010') return true;
+  const msg = err instanceof Error ? err.message : String(err);
+  return /node has been paused|paused due to inactivity/i.test(msg);
+}
+
 async function runSql(args: unknown[]): Promise<unknown> {
   if (!client) client = createClient();
   try {
