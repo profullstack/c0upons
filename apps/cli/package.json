@@ -1,6 +1,6 @@
 {
   "name": "@c0upons/cli",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "description": "c0upons CLI — search, submit, and manage coupons from the terminal",
   "type": "module",
   "bin": {
