@@ -1,8 +1,17 @@
 #!/usr/bin/env node
+import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import 'dotenv/config';
+
+// Read the version rather than repeating it. A literal here is a second source
+// of truth that nothing checks, and it had already drifted: package.json said
+// 0.1.0 while the shipped CLI was on 1.2.0. Resolved relative to this module,
+// so it works from src/ under tsx and from dist/ after a build.
+const { version } = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+) as { version: string };
 
 const BASE_URL = process.env.C0UPONS_API_URL ?? 'https://c0upons.com';
 
@@ -11,7 +20,7 @@ const program = new Command();
 program
   .name('c0upons')
   .description('Search, submit, and manage coupon codes from the terminal')
-  .version('0.1.0');
+  .version(version);
 
 program
   .command('search <query>')
