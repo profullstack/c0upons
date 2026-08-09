@@ -62,16 +62,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Mark bounty as claimed — atomic WHERE prevents race conditions
-  await db.sql`
+  const claimed = await db.sql`
     UPDATE bounties
     SET status = 'claimed', coupon_id = ${coupon_id}, claimer_did = ${did},
         updated_at = ${new Date().toISOString()}
     WHERE id = ${bountyId} AND status = 'funded'
+    RETURNING id
   `;
 
-  // Verify the claim succeeded (handles concurrent claim race)
-  const verify = await db.sql`SELECT claimer_did FROM bounties WHERE id = ${bountyId}`;
-  if (verify.length && verify[0].claimer_did !== did) {
+  if (!claimed.length) {
     return NextResponse.json({ error: 'Bounty was already claimed by another user' }, { status: 409 });
   }
 
