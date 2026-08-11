@@ -30,4 +30,4 @@ c0upons is a free, open-source coupon aggregator where anyone can browse deals, 
 - **Community-driven:** Anyone can submit codes; votes surface the best ones.
 - **Open source:** MIT licensed, source on GitHub.
 - **API:** `GET /api/coupons`, `GET /api/stores`, `GET /api/search?q=query`
-- **Stack:** Next.js 16, SQLite Cloud, Tailwind CSS v4, deployed on Railway.
+- **Stack:** Next.js 16, Turso (libSQL), Tailwind CSS v4, deployed on Railway.

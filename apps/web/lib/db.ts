@@ -1,70 +1,67 @@
 import 'server-only';
-import { Database } from '@sqlitecloud/drivers';
+import { createClient, type Client, type InValue } from '@libsql/client';
 import { loadRootEnv } from './root-env';
 
-let client: Database | null = null;
+let client: Client | null = null;
 
-function createClient(): Database {
+function getClient(): Client {
+  if (client) return client;
   loadRootEnv();
-  const url = process.env.SQLITECLOUD_URL;
-  if (!url) throw new Error('SQLITECLOUD_URL is not set');
-  return new Database({ connectionstring: url, usewebsocket: true });
+  const url = process.env.TURSO_DATABASE_URL;
+  if (!url) throw new Error('TURSO_DATABASE_URL is not set');
+  // A `file:` URL needs no token, which is what makes local runs and tests
+  // possible without production credentials.
+  client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+  return client;
 }
 
-// A cached client can hold a dead websocket after the SQLite Cloud node pauses
-// and resumes (free-tier auto-pause). Without this, getDb() keeps returning the
-// same broken connection and every query fails with "Connection unavailable"
-// until the process is restarted — which is exactly how /blog silently emptied.
-// Treat disconnect-class errors as recoverable: drop the client and retry once
-// with a fresh connection.
-function isDisconnect(err: unknown): boolean {
-  const msg = err instanceof Error ? err.message : String(err);
-  return /connection unavailable|got disconnected|disconnected|connection not been established|ERR_CONNECTION/i.test(
-    msg
-  );
+// libSQL refuses `undefined` outright ("undefined cannot be passed as argument
+// to the database"), while the routes hand it over freely for absent optional
+// fields — an unscraped image_url, a webhook payload without a thumbnail. The
+// old driver swallowed those; coercing here keeps a missing field a NULL
+// instead of turning it into a 500.
+function bind(value: unknown): InValue {
+  return value === undefined ? null : (value as InValue);
 }
 
-// SQLite Cloud parks a free-tier node after a stretch of inactivity. Every
-// query then fails with error 10010 until someone restarts it from the
-// dashboard, and the node refuses new sockets too — so reconnecting cannot fix
-// it. That is why this is deliberately NOT folded into isDisconnect() above:
-// retrying a paused node just pays the connection cost twice before failing
-// identically. Callers use it to tell "c0upons is down" (transient, 503) apart
-// from "c0upons is broken" (a real 500).
-export function isDbPaused(err: unknown): boolean {
-  const code = (err as { errorCode?: string | number } | null)?.errorCode;
-  if (code != null && String(code) === '10010') return true;
-  const msg = err instanceof Error ? err.message : String(err);
-  return /node has been paused|paused due to inactivity/i.test(msg);
-}
-
-async function runSql(args: unknown[]): Promise<unknown> {
-  if (!client) client = createClient();
-  try {
-    return await (client.sql as (...a: unknown[]) => Promise<unknown>)(...args);
-  } catch (err) {
-    if (!isDisconnect(err)) throw err;
-    try {
-      (client as unknown as { close?: () => void }).close?.();
-    } catch {
-      /* ignore close failures on an already-dead socket */
-    }
-    client = createClient();
-    return await (client.sql as (...a: unknown[]) => Promise<unknown>)(...args);
-  }
-}
-
-// Returns the shared client with its `sql` tagged-template wrapped so a stale
-// connection self-heals. All call sites use only `db.sql`, so this is drop-in.
-export function getDb(): Database {
-  if (!client) client = createClient();
-  return new Proxy(client, {
-    get(target, prop, receiver) {
-      if (prop === 'sql') {
-        return (...args: unknown[]) => runSql(args);
-      }
-      const value = Reflect.get(target, prop, receiver);
-      return typeof value === 'function' ? value.bind(target) : value;
+/**
+ * The database handle. Only `db.sql` is used anywhere in the app, so this
+ * exposes exactly that: a tagged template that binds every interpolated value
+ * as a parameter and resolves to the rows.
+ *
+ * libSQL rows are array-like *and* object-like, and serialize to plain named
+ * objects, so callers keep working unchanged — `rows.length`, destructuring a
+ * single COUNT row, and `NextResponse.json(rows)` all behave as before.
+ *
+ * Unlike the SQLite Cloud driver this replaces, there is no long-lived
+ * websocket to go stale, so no reconnect dance is needed: the HTTP client
+ * establishes a connection per request and a dropped one cannot poison the
+ * cached handle the way it once silently emptied /blog.
+ */
+export function getDb() {
+  return {
+    // The app assigns results straight to its own row types
+    // (`const stores: StoreWithCount[] = await db.sql...`), which is why this
+    // stays `any` rather than forcing a cast at all 77 call sites.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sql: async (strings: TemplateStringsArray, ...values: unknown[]): Promise<any> => {
+      const rs = await getClient().execute({
+        sql: strings.join('?'),
+        args: values.map(bind),
+      });
+      return rs.rows;
     },
-  });
+  };
+}
+
+// Turso scales an idle free database to zero and wakes it automatically on the
+// next request, so a brief stall is normal rather than an outage. A group left
+// idle for ten days is archived instead, and that state does need an explicit
+// unarchive call — the shapes below are the ones seen for a database that is
+// gone or unreachable rather than merely asleep. Callers use this to tell
+// "c0upons is down" (transient, 503) apart from "c0upons is broken" (a real
+// 500).
+export function isDbPaused(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /archived|not found|unavailable|SERVER_ERROR|502|503/i.test(msg);
 }

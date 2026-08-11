@@ -56,7 +56,7 @@ export default function PrivacyPage() {
       <Section title="Third-party services">
         <ul className="list-disc list-inside flex flex-col gap-1">
           <li><strong>Railway</strong> — cloud hosting (<a href="https://railway.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">privacy policy</a>)</li>
-          <li><strong>SQLite Cloud</strong> — database provider</li>
+          <li><strong>Turso</strong> — database provider (<a href="https://turso.tech/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">privacy policy</a>)</li>
           <li><strong>CoinPay</strong> — optional OAuth authentication for voting</li>
           <li><strong>CrawlProof</strong> — privacy-friendly analytics</li>
         </ul>

@@ -1,10 +1,9 @@
 name: db-keepalive
 
-# SQLite Cloud parks a free node after a stretch of inactivity, and a parked
-# node refuses new connections — so no amount of visitor traffic revives it,
-# only a restart from https://dashboard.sqlitecloud.io. Prevention is the only
-# automatable half: this keeps a query flowing so the node never goes idle
-# long enough to be parked.
+# Turso scales an idle free database to zero and wakes it automatically on the
+# next request, but a group left idle for ten days is archived, and that state
+# needs an explicit unarchive call. Keeping a query flowing means the ten-day
+# clock never runs down.
 #
 # Two caveats worth knowing before trusting it as the sole guard:
 #   * GitHub delays scheduled runs under load and drops them entirely when the
@@ -47,5 +46,6 @@ jobs:
             sleep 10
           done
           echo "::error::Database unreachable after 3 attempts (last status $status)."
-          echo "::error::If the body says the node is paused, restart it at https://dashboard.sqlitecloud.io"
+          echo "::error::If the group was archived for inactivity, unarchive it:"
+          echo "::error::  turso group unarchive default   (or POST /v1/organizations/{org}/groups/{group}/unarchive)"
           exit 1
