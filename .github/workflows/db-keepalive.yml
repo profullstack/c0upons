@@ -1,0 +1,51 @@
+name: db-keepalive
+
+# SQLite Cloud parks a free node after a stretch of inactivity, and a parked
+# node refuses new connections — so no amount of visitor traffic revives it,
+# only a restart from https://dashboard.sqlitecloud.io. Prevention is the only
+# automatable half: this keeps a query flowing so the node never goes idle
+# long enough to be parked.
+#
+# Two caveats worth knowing before trusting it as the sole guard:
+#   * GitHub delays scheduled runs under load and drops them entirely when the
+#     repo has had no activity for 60 days, so treat the cadence as best-effort.
+#   * It probes through the deployed site, so a Railway outage shows up here as
+#     a failure too. That is deliberate — both mean c0upons is down.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query the database
+        env:
+          BASE_URL: ${{ vars.KEEPALIVE_BASE_URL || 'https://c0upons.com' }}
+        run: |
+          set -uo pipefail
+          # Retry a couple of times so one dropped request doesn't page anyone;
+          # a genuinely paused node fails all three the same way.
+          for attempt in 1 2 3; do
+            status=$(curl -fsS -m 30 -o body.txt -w '%{http_code}' \
+              "$BASE_URL/api/health/db" || echo 000)
+            if [ "$status" = "200" ]; then
+              echo "database awake (attempt $attempt)"
+              exit 0
+            fi
+            echo "attempt $attempt: HTTP $status"
+            cat body.txt || true
+            sleep 10
+          done
+          echo "::error::Database unreachable after 3 attempts (last status $status)."
+          echo "::error::If the body says the node is paused, restart it at https://dashboard.sqlitecloud.io"
+          exit 1
