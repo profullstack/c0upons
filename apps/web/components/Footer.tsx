@@ -71,7 +71,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-gray-500">
           <p>© {new Date().getFullYear()} c0upons. Community-powered savings.</p>
-          <p>Built with Next.js · Powered by SQLite Cloud</p>
+          <p>Built with Next.js · Powered by Turso</p>
         </div>
       </div>
     </footer>

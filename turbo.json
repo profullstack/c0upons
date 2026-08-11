@@ -10,7 +10,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
-      "env": ["SQLITECLOUD_URL"]
+      "env": ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]
     },
     "lint": { "outputs": [] },
     "typecheck": { "outputs": [] },

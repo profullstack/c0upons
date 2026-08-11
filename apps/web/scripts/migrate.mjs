@@ -2,9 +2,11 @@
  * Database migration — creates tables and optionally seeds sample data.
  * Run with: pnpm db:migrate  (from apps/web)
  *
- * Requires SQLITECLOUD_URL in the repo root .env or as an env var.
+ * Requires TURSO_DATABASE_URL (and TURSO_AUTH_TOKEN for a remote database) in
+ * the repo root .env or as env vars. A `file:` URL runs it against a local
+ * SQLite file, which is how the schema is exercised in tests.
  */
-import { Database } from '@sqlitecloud/drivers';
+import { createClient } from '@libsql/client';
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -31,13 +33,24 @@ try {
   }
 } catch { /* no root .env — fall through to existing env */ }
 
-const url = process.env.SQLITECLOUD_URL;
+const url = process.env.TURSO_DATABASE_URL;
 if (!url) {
-  console.error('SQLITECLOUD_URL not set');
+  console.error('TURSO_DATABASE_URL not set');
   process.exit(1);
 }
 
-const db = new Database({ connectionstring: url, usewebsocket: true });
+// Mirrors lib/db.ts: expose `db.sql` as a tagged template so the migration
+// statements below read the same as the app's queries.
+const client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+const db = {
+  sql: async (strings, ...values) => {
+    const rs = await client.execute({
+      sql: strings.join('?'),
+      args: values.map((v) => (v === undefined ? null : v)),
+    });
+    return rs.rows;
+  },
+};
 
 console.log('Running migrations...');
 
@@ -86,6 +99,13 @@ await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_type TEXT`)
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_value REAL`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN image_url TEXT`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN url TEXT`);
+// These three indexes were declared in lib/schema.sql but never created here,
+// so every database built by this script — production included — has been
+// running without them. Every listing page joins coupons to stores and looks
+// stores up by slug, so they are worth having.
+await db.sql`CREATE INDEX IF NOT EXISTS idx_coupons_store ON coupons(store_id)`;
+await db.sql`CREATE INDEX IF NOT EXISTS idx_stores_slug ON stores(slug)`;
+await db.sql`CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug)`;
 console.log('  coupons');
 
 await db.sql`
