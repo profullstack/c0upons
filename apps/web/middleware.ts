@@ -1,8 +1,15 @@
+import { gate } from "@/lib/crawl-gateway";
 import { NextRequest, NextResponse } from 'next/server';
 
 const CANONICAL = 'https://c0upons.com';
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
+  // Crawl gateway first: AI training crawlers get 402 Payment Required (or the
+  // sales page at /crawl) unless they present a paid pass. People, Googlebot
+  // and retrieval crawlers fall through to everything below.
+  const answer = await gate(req);
+  if (answer) return answer;
+
   const host = req.headers.get('host') ?? '';
   const proto = req.headers.get('x-forwarded-proto') ?? 'https';
 
