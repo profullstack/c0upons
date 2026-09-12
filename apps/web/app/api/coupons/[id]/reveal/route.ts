@@ -5,6 +5,7 @@ import { dbErrorResponse } from '@/lib/api-error';
 import { loadRootEnv } from '@/lib/root-env';
 import { ObscuraMcpClient } from '@/lib/obscura-mcp';
 import { revealCode, withBrowserLock } from '@/lib/reveal-code';
+import { revealCodeHeuristic } from '@/lib/reveal-heuristic';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 180;
@@ -30,14 +31,18 @@ function modelRefused(err: unknown): boolean {
   return false;
 }
 
-function deps() {
+/**
+ * The browser is required; the model is optional. Without a key, or while
+ * the key is refused, the deterministic shopper in reveal-heuristic.ts does
+ * the walk instead, so the feature never waits on a quota.
+ */
+function deps(): { mcp: ObscuraMcpClient; anthropic: Anthropic | null } | null {
   loadRootEnv();
   const url = process.env.OBSCURA_MCP_URL;
   if (!url) return null;
-  if (!process.env.ANTHROPIC_API_KEY) return null;
   mcp ??= new ObscuraMcpClient(url);
-  anthropic ??= new Anthropic({ timeout: 90_000 });
-  return { mcp, anthropic };
+  if (process.env.ANTHROPIC_API_KEY) anthropic ??= new Anthropic({ timeout: 90_000 });
+  return { mcp, anthropic: process.env.ANTHROPIC_API_KEY ? anthropic : null };
 }
 
 /**
@@ -92,29 +97,24 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     const d = deps();
     if (!d) return NextResponse.json({ error: 'code reveal is not configured' }, { status: 503 });
-    if (Date.now() < modelBlockedUntil) {
-      return NextResponse.json(
-        { error: 'code reveal is paused: the model is unavailable' },
-        { status: 503, headers: { 'Retry-After': '3600' } }
-      );
-    }
 
-    let result;
-    try {
-      result = await withBrowserLock(() =>
-        revealCode({ url: coupon.url, title: coupon.title, store: coupon.store_name }, d)
-      );
-    } catch (err) {
-      if (modelRefused(err)) {
-        modelBlockedUntil = Date.now() + MODEL_BACKOFF_MS;
-        console.error('reveal paused for an hour, the model refused:', (err as Error).message);
-        return NextResponse.json(
-          { error: 'code reveal is paused: the model is unavailable' },
-          { status: 503, headers: { 'Retry-After': '3600' } }
-        );
+    const result = await withBrowserLock(async () => {
+      const input = { url: coupon.url, title: coupon.title, store: coupon.store_name };
+      if (d.anthropic && Date.now() >= modelBlockedUntil) {
+        try {
+          const r = await revealCode(input, { mcp: d.mcp, anthropic: d.anthropic });
+          return { ...r, engine: 'model' as const };
+        } catch (err) {
+          if (!modelRefused(err)) throw err;
+          // The org's cap or a rate limit: remember it for an hour and walk
+          // the page without the model rather than answering nothing.
+          modelBlockedUntil = Date.now() + MODEL_BACKOFF_MS;
+          console.error('model refused, reveal falls back to the heuristic for an hour:', (err as Error).message);
+        }
       }
-      throw err;
-    }
+      const r = await revealCodeHeuristic(coupon.url, d.mcp);
+      return { ...r, engine: 'heuristic' as const };
+    });
 
     const now = new Date().toISOString();
     if (result.code) {
@@ -128,6 +128,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({
       code: result.code,
       method: result.method,
+      engine: result.engine,
       notes: result.notes,
       checked_at: now,
     });
