@@ -99,6 +99,13 @@ await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_type TEXT`)
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN discount_value REAL`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN image_url TEXT`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN url TEXT`);
+// Where a row came from when it was not submitted here. The nichedb sync
+// (lib/nichedb-sync.ts) writes source = 'nichedb' and source_id = the upstream
+// source slug plus its external id, and upserts on the pair; a submitted coupon
+// leaves both NULL, and NULLs never collide in a unique index.
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN source TEXT`);
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN source_id TEXT`);
+await db.sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_source_id ON coupons(source, source_id)`;
 // These three indexes were declared in lib/schema.sql but never created here,
 // so every database built by this script — production included — has been
 // running without them. Every listing page joins coupons to stores and looks
@@ -177,26 +184,22 @@ if (needIds.length) console.log(`  bounties: backfilled ${needIds.length} public
 await db.sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_bounties_public_id ON bounties(public_id)`;
 console.log('  bounties');
 
+// Where runs remember where they got to: the nichedb sync keeps its cursor and
+// its last run time here, keyed 'nichedb:deals:*'.
+await db.sql`
+  CREATE TABLE IF NOT EXISTS sync_state (
+    key        TEXT PRIMARY KEY,
+    value      TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`;
+console.log('  sync_state');
+
+// An empty database used to be seeded with four made-up codes here. Real rows
+// now arrive from nichedb.dev's deals collection through /api/sync/nichedb,
+// which the keep-alive schedule calls, so a fresh database fills itself.
 const [{ n }] = await db.sql`SELECT COUNT(*) AS n FROM stores`;
-if (n === 0) {
-  console.log('  Seeding sample data...');
-  await db.sql`INSERT INTO stores (name, slug, website) VALUES ('Amazon', 'amazon', 'https://amazon.com')`;
-  await db.sql`INSERT INTO stores (name, slug, website) VALUES ('Nike', 'nike', 'https://nike.com')`;
-  await db.sql`INSERT INTO stores (name, slug, website) VALUES ('Walmart', 'walmart', 'https://walmart.com')`;
-
-  const stores = await db.sql`SELECT id, slug FROM stores`;
-  const bySlug = Object.fromEntries(stores.map(s => [s.slug, s.id]));
-
-  await db.sql`INSERT INTO coupons (store_id, code, title, discount, description, votes)
-    VALUES (${bySlug.amazon}, 'SAVE10', '10% off your order', '10%', 'Use at checkout for 10% off any item', 42)`;
-  await db.sql`INSERT INTO coupons (store_id, code, title, discount, description, votes)
-    VALUES (${bySlug.amazon}, 'PRIME20', 'Prime members: 20% off', '20%', 'Exclusive Prime discount on electronics', 91)`;
-  await db.sql`INSERT INTO coupons (store_id, code, title, discount, description, votes)
-    VALUES (${bySlug.nike}, 'NIKE15', '15% off sitewide', '15%', 'Valid on all full-price items', 55)`;
-  await db.sql`INSERT INTO coupons (store_id, code, title, discount, description, votes)
-    VALUES (${bySlug.walmart}, 'WMT5OFF', '$5 off $50+', '$5 off', 'Minimum $50 order required', 30)`;
-  console.log('  Seeded 3 stores, 4 coupons');
-}
+if (n === 0) console.log('  No stores yet; POST /api/sync/nichedb fills them from nichedb.dev');
 
 console.log('\nDone.');
 process.exit(0);

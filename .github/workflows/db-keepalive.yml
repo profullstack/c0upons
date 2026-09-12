@@ -49,3 +49,21 @@ jobs:
           echo "::error::If the group was archived for inactivity, unarchive it:"
           echo "::error::  turso group unarchive default   (or POST /v1/organizations/{org}/groups/{group}/unarchive)"
           exit 1
+      # The same schedule is what fills the site: each tick pulls the next
+      # pages of nichedb.dev's deals collection into stores and coupons. The
+      # route throttles itself to one run per ten minutes and answers
+      # `skipped` otherwise, so calling it every fifteen is the cadence. A
+      # failed sync is logged, not fatal: the job's verdict is the database.
+      - name: Sync deals from nichedb.dev
+        env:
+          BASE_URL: ${{ vars.KEEPALIVE_BASE_URL || 'https://c0upons.com' }}
+        run: |
+          set -uo pipefail
+          status=$(curl -sS -m 60 -X POST -o sync.json -w '%{http_code}' \
+            "$BASE_URL/api/sync/nichedb" || echo 000)
+          echo "sync: HTTP $status"
+          cat sync.json || true
+          echo
+          if [ "$status" != "200" ]; then
+            echo "::warning::nichedb sync answered HTTP $status"
+          fi
