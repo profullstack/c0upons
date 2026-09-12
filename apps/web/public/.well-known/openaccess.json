@@ -1,0 +1,29 @@
+{
+  "openaccess": "0.1",
+  "name": "c0upons",
+  "url": "https://c0upons.com",
+  "operator": "https://logicsrc.com/.well-known/openprofile.md",
+  "redirect_uris": [
+    "https://c0upons.com/api/v1/openaccess/callback"
+  ],
+  "jwks": {
+    "keys": [
+      {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "kid": "5iJAnJj2O7XB",
+        "x": "vkSrjyxI7C95OS-TBLg7CJQho_GT_rr-RI5AG5rLr0s",
+        "alg": "EdDSA",
+        "use": "sig"
+      }
+    ]
+  },
+  "scopes": {},
+  "honours": [
+    "profullstack.com/all-access"
+  ],
+  "webhooks": "https://c0upons.com/api/v1/openaccess/events",
+  "hubs": [
+    "https://openaccess.logicsrc.com"
+  ]
+}
