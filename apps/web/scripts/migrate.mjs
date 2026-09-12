@@ -106,6 +106,11 @@ await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN url TEXT`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN source TEXT`);
 await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN source_id TEXT`);
 await db.sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_source_id ON coupons(source, source_id)`;
+// When a browser last read the deal page looking for a hidden code, and where
+// the code came from when one was found that way ('obscura'). See
+// app/api/coupons/[id]/reveal/route.ts.
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN code_checked_at DATETIME`);
+await addColumn(() => db.sql`ALTER TABLE coupons ADD COLUMN code_source TEXT`);
 // These three indexes were declared in lib/schema.sql but never created here,
 // so every database built by this script — production included — has been
 // running without them. Every listing page joins coupons to stores and looks

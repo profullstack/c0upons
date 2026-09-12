@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import CopyButton from '@/components/CopyButton';
+import RevealCode from '@/components/RevealCode';
 import { getDb } from '@/lib/db';
 import { Coupon } from '@/lib/types';
 
@@ -62,14 +63,9 @@ export default async function CouponPage({ params }: { params: Promise<{ id: str
           {coupon.code ? (
             <CopyButton code={coupon.code} />
           ) : coupon.url ? (
-            <a
-              href={coupon.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg text-center transition-colors"
-            >
-              Get Deal
-            </a>
+            // No code on file: show the link now and have a browser read the
+            // deal page for a hidden one (see /api/coupons/[id]/reveal).
+            <RevealCode couponId={coupon.id} url={coupon.url} />
           ) : null}
 
           {coupon.expiry_date && (
