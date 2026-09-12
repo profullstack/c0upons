@@ -38,7 +38,15 @@ CREATE TABLE IF NOT EXISTS coupons (
   image_url      TEXT,
   votes          INTEGER NOT NULL DEFAULT 0,
   verified       INTEGER NOT NULL DEFAULT 0,
-  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+  source         TEXT,
+  source_id      TEXT
+);
+
+CREATE TABLE IF NOT EXISTS sync_state (
+  key        TEXT PRIMARY KEY,
+  value      TEXT,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS coupon_votes (
@@ -85,6 +93,7 @@ CREATE TABLE IF NOT EXISTS bounties (
 );
 
 CREATE INDEX IF NOT EXISTS idx_coupons_store ON coupons(store_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_source_id ON coupons(source, source_id);
 CREATE INDEX IF NOT EXISTS idx_stores_slug ON stores(slug);
 CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 CREATE INDEX IF NOT EXISTS idx_blog_posts_status_published ON blog_posts(status, published_at);
