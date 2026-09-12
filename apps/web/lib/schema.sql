@@ -40,7 +40,9 @@ CREATE TABLE IF NOT EXISTS coupons (
   verified       INTEGER NOT NULL DEFAULT 0,
   created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
   source         TEXT,
-  source_id      TEXT
+  source_id      TEXT,
+  code_checked_at DATETIME,
+  code_source    TEXT
 );
 
 CREATE TABLE IF NOT EXISTS sync_state (
