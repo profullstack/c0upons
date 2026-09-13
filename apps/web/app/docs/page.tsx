@@ -83,6 +83,16 @@ const CLI_COMMANDS = [
     example: 'c0upons store adidas\nc0upons store nike',
   },
   {
+    cmd: 'c0upons reveal <id>',
+    desc: 'Read a coupon\'s deal page with a real browser, click what a shopper would, and print the code it finds. Takes up to a minute.',
+    example: 'c0upons reveal 67',
+  },
+  {
+    cmd: 'c0upons sync',
+    desc: 'Pull the next deals from nichedb.dev, then read the deal pages of a few coupons that have no code yet.',
+    example: 'c0upons sync',
+  },
+  {
     cmd: 'c0upons upgrade',
     desc: 'Upgrade the CLI to the latest version. Alias: update',
     example: 'c0upons upgrade\nc0upons update',
@@ -108,6 +118,8 @@ const nav = [
   { href: '#api-coupons', label: 'Coupons', sub: true },
   { href: '#api-stores', label: 'Stores', sub: true },
   { href: '#api-search', label: 'Search', sub: true },
+  { href: '#api-reveal', label: 'Reveal and sync', sub: true },
+  { href: '#mcp', label: 'MCP', sub: false },
   { href: '#contributing', label: 'Contributing', sub: false },
 ];
 
@@ -327,6 +339,82 @@ export default function DocsPage() {
             desc="Full-text search across coupon titles, descriptions, codes, and store names."
             example={`curl "https://c0upons.com/api/search?q=nike"`}
           />
+        </section>
+
+        <section id="api-reveal" className="scroll-mt-20 flex flex-col gap-4">
+          <h3 className="text-base font-bold text-gray-800">Reveal and sync</h3>
+          <p className="text-gray-600 leading-relaxed text-sm">
+            Coupons arrive from nichedb.dev&apos;s deals collection, and the ones whose code is hidden
+            behind a &quot;show code&quot; button get their deal page read by a real browser. Both are
+            keyless: they only read public pages and write nothing you could not have submitted.
+            A reveal takes up to a minute.
+          </p>
+          <Endpoint
+            method="POST"
+            path="/api/coupons/[id]/reveal"
+            desc="Read the coupon's deal page with a browser, click what a shopper would, and store any code found. Cached for a day when the page had none."
+            example="curl -X POST https://c0upons.com/api/coupons/67/reveal"
+            response={`{
+  "code": "SAVE25NOW",
+  "method": "clicked",
+  "engine": "heuristic",
+  "notes": "after \\"Show Code\\"",
+  "checked_at": "2026-09-13T01:20:00.000Z"
+}`}
+          />
+          <Endpoint
+            method="POST"
+            path="/api/sync/reveal"
+            desc="Read the deal pages of up to three coupons that have no code yet, most-voted first. Answers how many are still waiting."
+            example="curl -X POST https://c0upons.com/api/sync/reveal"
+            response={`{
+  "ok": true,
+  "remaining": 287,
+  "found": 1,
+  "checked": [{ "id": 67, "code": null, "method": "none", "engine": "heuristic", "notes": "no code on the page", "checked_at": "..." }]
+}`}
+          />
+          <Endpoint
+            method="POST"
+            path="/api/sync/nichedb"
+            desc="Pull the next pages of nichedb.dev's deals collection into stores and coupons. Throttled to one run per ten minutes."
+            example="curl -X POST https://c0upons.com/api/sync/nichedb"
+            response={`{ "ok": true, "skipped": false, "fetched": 267, "upserted": 239, "stores": 36, "cursor": 8317456, "more": false }`}
+          />
+        </section>
+
+        {/* MCP */}
+        <section id="mcp" className="scroll-mt-20 flex flex-col gap-5">
+          <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-200">MCP</h2>
+          <p className="text-gray-600 leading-relaxed">
+            Everything above is also a Model Context Protocol server, so an agent can search coupons,
+            read a store, and have the browser reveal a code without leaving its tools. Stateless
+            JSON-RPC over POST at <IC>https://c0upons.com/mcp</IC> (also <IC>/api/mcp</IC>), no key.
+            The descriptor for catalogs is at <IC>/.well-known/openmcp.json</IC>.
+          </p>
+          <Code>{`# Claude Code
+claude mcp add --transport http c0upons https://c0upons.com/mcp
+
+# Any client: list the tools
+curl -X POST https://c0upons.com/mcp -H 'content-type: application/json' \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`}</Code>
+          <div className="grid sm:grid-cols-2 gap-3 text-sm">
+            {[
+              ['search_coupons', 'Search by store, title, description or code.'],
+              ['top_coupons', 'The most voted coupons.'],
+              ['list_stores', 'Every store with its coupon count.'],
+              ['store_coupons', "One store's coupons by slug."],
+              ['get_coupon', 'One coupon by id.'],
+              ['reveal_code', "Read a coupon's deal page with a browser and return the code it finds."],
+              ['sync_deals', 'Pull the next deals from nichedb.dev.'],
+              ['reveal_pending', 'Read the pages of up to three code-less coupons.'],
+            ].map(([name, desc]) => (
+              <div key={name} className="border border-gray-200 rounded-lg px-4 py-3">
+                <IC>{name}</IC>
+                <p className="text-gray-600 mt-1">{desc}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Contributing */}
