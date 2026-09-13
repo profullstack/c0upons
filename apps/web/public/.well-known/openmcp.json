@@ -1,0 +1,33 @@
+{
+  "openmcp": "0.1",
+  "mcp": "https://c0upons.com/mcp",
+  "name": "c0upons",
+  "description": "Community coupon codes, seeded from nichedb.dev's deals collection, with a real browser that reveals the codes deal pages hide. Search, stores, one coupon, reveal, sync, over MCP.",
+  "url": "https://c0upons.com",
+  "operator": "https://logicsrc.com/.well-known/openprofile.md",
+  "auth": {
+    "kind": "none",
+    "open": [
+      "search_coupons",
+      "top_coupons",
+      "list_stores",
+      "store_coupons",
+      "get_coupon",
+      "reveal_code",
+      "sync_deals",
+      "reveal_pending"
+    ]
+  },
+  "tags": ["coupons", "deals", "shopping", "promo-codes", "c0upons"],
+  "tools": [
+    "search_coupons",
+    "top_coupons",
+    "list_stores",
+    "store_coupons",
+    "get_coupon",
+    "reveal_code",
+    "sync_deals",
+    "reveal_pending"
+  ],
+  "catalogs": ["https://openmcp.logicsrc.com"]
+}

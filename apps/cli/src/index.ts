@@ -97,6 +97,62 @@ program
   });
 
 program
+  .command('reveal <id>')
+  .description('Read a coupon\'s deal page with a browser to find its hidden code')
+  .action(async (id: string) => {
+    const spinner = ora(`Reading the deal page for coupon ${id}...`).start();
+    try {
+      const res = await fetch(`${BASE_URL}/api/coupons/${encodeURIComponent(id)}/reveal`, { method: 'POST' });
+      const data = (await res.json()) as Record<string, unknown>;
+      if (!res.ok) {
+        spinner.fail(String(data.error ?? res.statusText));
+        return;
+      }
+      if (data.code) {
+        spinner.succeed(`Code: ${chalk.white.bold(String(data.code))}` + (data.engine ? chalk.gray(` (${String(data.engine)})`) : ''));
+      } else {
+        spinner.info(chalk.yellow('No code on the page.') + (data.notes ? chalk.gray(` ${String(data.notes)}`) : ''));
+      }
+    } catch {
+      spinner.fail('Failed to reach c0upons.');
+    }
+  });
+
+program
+  .command('sync')
+  .description('Pull the next deals from nichedb.dev and read the pages of coupons without a code')
+  .option('--reveal-only', 'Skip the nichedb pull and only reveal codes')
+  .option('--sync-only', 'Only pull from nichedb, do not reveal codes')
+  .action(async (opts: { revealOnly?: boolean; syncOnly?: boolean }) => {
+    if (!opts.revealOnly) {
+      const spinner = ora('Pulling deals from nichedb.dev...').start();
+      try {
+        const res = await fetch(`${BASE_URL}/api/sync/nichedb`, { method: 'POST' });
+        const data = (await res.json()) as Record<string, unknown>;
+        if (!res.ok) spinner.fail(String(data.error ?? res.statusText));
+        else if (data.skipped) spinner.info(chalk.gray('Synced recently; skipped.'));
+        else spinner.succeed(`${String(data.upserted)} coupons across ${String(data.stores)} stores from ${String(data.fetched)} deals`);
+      } catch {
+        spinner.fail('Failed to reach c0upons.');
+      }
+    }
+    if (!opts.syncOnly) {
+      const spinner = ora('Reading deal pages for coupons without a code...').start();
+      try {
+        const res = await fetch(`${BASE_URL}/api/sync/reveal`, { method: 'POST' });
+        const data = (await res.json()) as { error?: string; checked?: { id: number; code: string | null }[]; found?: number; remaining?: number };
+        if (!res.ok) spinner.fail(String(data.error ?? res.statusText));
+        else {
+          spinner.succeed(`Read ${data.checked?.length ?? 0} page(s), found ${data.found ?? 0} code(s), ${data.remaining ?? 0} left`);
+          for (const c of data.checked ?? []) console.log(chalk.gray(`  #${c.id}`), c.code ? chalk.white.bold(c.code) : chalk.gray('no code'));
+        }
+      } catch {
+        spinner.fail('Failed to reach c0upons.');
+      }
+    }
+  });
+
+program
   .command('submit')
   .description('Submit a new coupon')
   .requiredOption('--store-id <id>', 'Store ID')

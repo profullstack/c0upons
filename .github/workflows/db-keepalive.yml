@@ -67,3 +67,18 @@ jobs:
           if [ "$status" != "200" ]; then
             echo "::warning::nichedb sync answered HTTP $status"
           fi
+      # And the coupons that arrived without a code get their deal pages read
+      # by the browser, three per tick, most-voted first.
+      - name: Reveal hidden codes
+        env:
+          BASE_URL: ${{ vars.KEEPALIVE_BASE_URL || 'https://c0upons.com' }}
+        run: |
+          set -uo pipefail
+          status=$(curl -sS -m 180 -X POST -o reveal.json -w '%{http_code}' \
+            "$BASE_URL/api/sync/reveal" || echo 000)
+          echo "reveal: HTTP $status"
+          cat reveal.json || true
+          echo
+          if [ "$status" != "200" ]; then
+            echo "::warning::reveal sweep answered HTTP $status"
+          fi

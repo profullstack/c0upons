@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-VERSION="1.5.0"
+VERSION="1.6.0"
 BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
 # Website root (for login + share links). Defaults to BASE_URL without /api.
 WEB_URL="${C0UPONS_WEB:-${BASE_URL%/api}}"
@@ -32,6 +32,8 @@ usage() {
   echo "  latest            Show latest/trending coupons"
   echo "  stores            List all stores"
   echo "  store <slug>      Show coupons for a store"
+  echo "  reveal <id>       Read a coupon's deal page with a browser to find its code"
+  echo "  sync              Pull new deals from nichedb.dev and reveal codes for a few coupons"
   echo "  login             Connect your CoinPay account"
   echo "  logout            Forget saved credentials"
   echo "  submit            Submit a coupon (requires login)"
@@ -43,6 +45,7 @@ usage() {
   echo ""
   echo -e "${BOLD}EXAMPLES${RESET}"
   echo "  c0upons search nike"
+  echo "  c0upons reveal 67"
   echo "  c0upons login"
   echo "  c0upons submit --store Nike --title '20% off sitewide' --code SAVE20 --percent 20 --url https://nike.com"
   echo "  c0upons bounty --store Adidas --title 'Need a 30% off code' --reward 1.00"
@@ -231,6 +234,64 @@ cmd_store() {
   done <<< "$coupons"
 }
 
+# api_post_public <path> — a POST that needs no login (reveal, sync). Same
+# contract as api_get: body in $API_BODY on success, the server's message
+# and exit on failure. A reveal reads a page through a browser, so the wait
+# is long and the timeout matches the server's own budget.
+api_post_public() {
+  local path="$1" resp code
+  resp=$(curl -sSL -m 190 -w $'\n%{http_code}' -X POST "${BASE_URL}${path}") \
+    || { echo -e "${RED}Network error.${RESET} Could not reach ${BASE_URL}."; exit 1; }
+  code=$(printf '%s' "$resp" | tail -n1)
+  API_BODY=$(printf '%s' "$resp" | sed '$d')
+  if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
+    return 0
+  fi
+  local msg
+  msg=$(printf '%s' "$API_BODY" | jq -r '.error // empty' 2>/dev/null || true)
+  if [ "$code" = "503" ]; then
+    echo -e "${ORANGE}c0upons is temporarily unavailable.${RESET} ${msg:-Please try again shortly.}"
+  else
+    echo -e "${RED}Error (${code}):${RESET} ${msg:-request failed}"
+  fi
+  exit 1
+}
+
+cmd_reveal() {
+  require_jq
+  local id="${1:-}"
+  if [ -z "$id" ]; then
+    echo "Usage: c0upons reveal <coupon id>"
+    exit 1
+  fi
+  echo -e "${DIM}Reading the deal page for coupon ${id} with a browser (this takes up to a minute)...${RESET}"
+  api_post_public "/coupons/${id}/reveal"
+  local code notes engine
+  code=$(echo "$API_BODY" | jq -r '.code // empty')
+  notes=$(echo "$API_BODY" | jq -r '.notes // empty')
+  engine=$(echo "$API_BODY" | jq -r '.engine // empty')
+  if [ -n "$code" ]; then
+    echo -e "${GREEN}✓${RESET} Code: ${BOLD}${code}${RESET}${engine:+ ${DIM}(${engine})${RESET}}"
+  else
+    echo -e "${ORANGE}No code on the page.${RESET}${notes:+ ${DIM}${notes}${RESET}}"
+  fi
+}
+
+cmd_sync() {
+  require_jq
+  echo -e "${DIM}Pulling the next deals from nichedb.dev...${RESET}"
+  api_post_public "/sync/nichedb"
+  if [ "$(echo "$API_BODY" | jq -r '.skipped')" = "true" ]; then
+    echo -e "${DIM}Synced recently; skipped.${RESET}"
+  else
+    echo -e "${GREEN}✓${RESET} $(echo "$API_BODY" | jq -r '"\(.upserted) coupons across \(.stores) stores from \(.fetched) deals"')"
+  fi
+  echo -e "${DIM}Reading deal pages for coupons without a code (a few per run)...${RESET}"
+  api_post_public "/sync/reveal"
+  echo -e "${GREEN}✓${RESET} $(echo "$API_BODY" | jq -r '"Read \(.checked | length) page(s), found \(.found) code(s), \(.remaining) left"')"
+  echo "$API_BODY" | jq -r '.checked[] | "  #\(.id)  \(.code // "no code")"'
+}
+
 cmd_login() {
   require_jq
   echo -e "To connect the CLI, open this URL and sign in with CoinPay:"
@@ -401,6 +462,8 @@ case "${1:-help}" in
   latest)             cmd_latest ;;
   stores)             cmd_stores ;;
   store)              shift; cmd_store "$@" ;;
+  reveal)             shift; cmd_reveal "$@" ;;
+  sync)               cmd_sync ;;
   login)              cmd_login ;;
   logout)             cmd_logout ;;
   submit)             shift; cmd_submit "$@" ;;

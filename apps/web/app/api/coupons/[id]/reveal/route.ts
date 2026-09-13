@@ -1,76 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { getDb } from '@/lib/db';
 import { dbErrorResponse } from '@/lib/api-error';
 import { loadRootEnv } from '@/lib/root-env';
-import { ObscuraMcpClient } from '@/lib/obscura-mcp';
-import { revealCode, withBrowserLock } from '@/lib/reveal-code';
-import { revealCodeHeuristic } from '@/lib/reveal-heuristic';
+import { RECHECK_HOURS, ensureRevealColumns, revealDeps, revealForCoupon } from '@/lib/reveal-coupon';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 180;
-
-/** How long a "no code here" answer stands before the page is read again. */
-export const RECHECK_HOURS = 24;
-
-let mcp: ObscuraMcpClient | null = null;
-let anthropic: Anthropic | null = null;
-
-/*
- * When the model says no (the org's monthly usage cap, or a rate limit), every
- * page view would otherwise open a browser and be refused again. Remember the
- * refusal for an hour and answer 503 at once; the page still shows the link.
- */
-let modelBlockedUntil = 0;
-const MODEL_BACKOFF_MS = 60 * 60_000;
-
-function modelRefused(err: unknown): boolean {
-  if (err instanceof Anthropic.RateLimitError) return true;
-  if (err instanceof Anthropic.BadRequestError && /usage limits/i.test(err.message)) return true;
-  if (err instanceof Anthropic.AuthenticationError) return true;
-  return false;
-}
-
-/**
- * The browser is required; the model is optional. Without a key, or while
- * the key is refused, the deterministic shopper in reveal-heuristic.ts does
- * the walk instead, so the feature never waits on a quota.
- */
-function deps(): { mcp: ObscuraMcpClient; anthropic: Anthropic | null } | null {
-  loadRootEnv();
-  const url = process.env.OBSCURA_MCP_URL;
-  if (!url) return null;
-  mcp ??= new ObscuraMcpClient(url);
-  if (process.env.ANTHROPIC_API_KEY) anthropic ??= new Anthropic({ timeout: 90_000 });
-  return { mcp, anthropic: process.env.ANTHROPIC_API_KEY ? anthropic : null };
-}
-
-/**
- * The two columns this route writes, created if the migration has not run.
- * ALTER TABLE has no IF NOT EXISTS in SQLite, so an existing column is known
- * by the error it raises.
- */
-async function ensureColumns(db: ReturnType<typeof getDb>) {
-  for (const stmt of [
-    () => db.sql`ALTER TABLE coupons ADD COLUMN code_checked_at DATETIME`,
-    () => db.sql`ALTER TABLE coupons ADD COLUMN code_source TEXT`,
-  ]) {
-    try {
-      await stmt();
-    } catch (err) {
-      if (!/duplicate column/i.test(String((err as Error)?.message ?? err))) throw err;
-    }
-  }
-}
 
 /**
  * Reveal the code for one coupon by driving a browser through its deal page.
  *
  * Answers at once when the row already has a code, or when the page was read
  * within the last day and had none, so a busy coupon page costs one crawl a
- * day at most. Otherwise it runs the shopper agent (Obscura + Claude Haiku),
- * stores what it found, and answers with it. 503 when the deployment has no
- * Obscura relay or no Anthropic key, which is how local dev looks.
+ * day at most. Otherwise it reads the page (the model when a key has quota,
+ * the scripted walk when not), stores what it found, and answers with it.
+ * 503 when the deployment has no Obscura relay, which is how local dev looks.
  */
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -79,7 +23,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const db = getDb();
-    await ensureColumns(db);
+    await ensureRevealColumns(db);
     const rows = await db.sql`
       SELECT c.id, c.code, c.url, c.title, c.code_checked_at, s.name AS store_name
       FROM coupons c JOIN stores s ON s.id = c.store_id
@@ -95,43 +39,13 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ code: null, checked_at: coupon.code_checked_at, cached: true });
     }
 
-    const d = deps();
+    loadRootEnv();
+    const d = revealDeps();
     if (!d) return NextResponse.json({ error: 'code reveal is not configured' }, { status: 503 });
 
-    const result = await withBrowserLock(async () => {
-      const input = { url: coupon.url, title: coupon.title, store: coupon.store_name };
-      if (d.anthropic && Date.now() >= modelBlockedUntil) {
-        try {
-          const r = await revealCode(input, { mcp: d.mcp, anthropic: d.anthropic });
-          return { ...r, engine: 'model' as const };
-        } catch (err) {
-          if (!modelRefused(err)) throw err;
-          // The org's cap or a rate limit: remember it for an hour and walk
-          // the page without the model rather than answering nothing.
-          modelBlockedUntil = Date.now() + MODEL_BACKOFF_MS;
-          console.error('model refused, reveal falls back to the heuristic for an hour:', (err as Error).message);
-        }
-      }
-      const r = await revealCodeHeuristic(coupon.url, d.mcp);
-      return { ...r, engine: 'heuristic' as const };
-    });
-
-    const now = new Date().toISOString();
-    if (result.code) {
-      await db.sql`
-        UPDATE coupons SET code = ${result.code}, code_source = 'obscura', code_checked_at = ${now}
-        WHERE id = ${couponId} AND code IS NULL
-      `;
-    } else {
-      await db.sql`UPDATE coupons SET code_checked_at = ${now} WHERE id = ${couponId}`;
-    }
-    return NextResponse.json({
-      code: result.code,
-      method: result.method,
-      engine: result.engine,
-      notes: result.notes,
-      checked_at: now,
-    });
+    const { id: _id, ...out } = await revealForCoupon(db, coupon, d);
+    void _id;
+    return NextResponse.json(out, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     console.error('reveal failed:', err);
     return dbErrorResponse(err, 'code reveal failed');
