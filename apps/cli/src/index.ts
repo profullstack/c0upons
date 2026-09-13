@@ -120,9 +120,9 @@ program
 
 program
   .command('sync')
-  .description('Pull the next deals from nichedb.dev and read the pages of coupons without a code')
-  .option('--reveal-only', 'Skip the nichedb pull and only reveal codes')
-  .option('--sync-only', 'Only pull from nichedb, do not reveal codes')
+  .description('Pull the next deals from nichedb.dev and r/couponcodes, and read the pages of coupons without a code')
+  .option('--reveal-only', 'Skip the pulls and only reveal codes')
+  .option('--sync-only', 'Only pull from nichedb and r/couponcodes, do not reveal codes')
   .action(async (opts: { revealOnly?: boolean; syncOnly?: boolean }) => {
     if (!opts.revealOnly) {
       const spinner = ora('Pulling deals from nichedb.dev...').start();
@@ -134,6 +134,16 @@ program
         else spinner.succeed(`${String(data.upserted)} coupons across ${String(data.stores)} stores from ${String(data.fetched)} deals`);
       } catch {
         spinner.fail('Failed to reach c0upons.');
+      }
+      const reddit = ora('Reading the newest r/couponcodes posts...').start();
+      try {
+        const res = await fetch(`${BASE_URL}/api/sync/reddit`, { method: 'POST' });
+        const data = (await res.json()) as Record<string, unknown>;
+        if (!res.ok) reddit.fail(String(data.error ?? res.statusText));
+        else if (data.skipped) reddit.info(chalk.gray('Read recently; skipped.'));
+        else reddit.succeed(`${String(data.inserted)} new, ${String(data.updated)} updated, ${String(data.declined)} declined of ${String(data.fetched)} posts (via ${String(data.via)})`);
+      } catch {
+        reddit.fail('Failed to reach c0upons.');
       }
     }
     if (!opts.syncOnly) {

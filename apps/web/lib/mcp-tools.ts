@@ -4,6 +4,7 @@ import { getDb } from './db';
 import { loadRootEnv } from './root-env';
 import type { McpTool, McpServerInfo } from './mcp-protocol';
 import { syncNichedbDeals } from './nichedb-sync';
+import { syncRedditCouponcodes } from './reddit-sync';
 import { RECHECK_HOURS, ensureRevealColumns, revealDeps, revealForCoupon, sweepReveals } from './reveal-coupon';
 
 /**
@@ -19,7 +20,8 @@ export const SERVER: McpServerInfo = {
   instructions:
     'c0upons.com is a community coupon site seeded from nichedb.dev. Use search_coupons or store_coupons to find codes, ' +
     'get_coupon for one, and reveal_code when a coupon has no code: a real browser reads its deal page and clicks what a ' +
-    'shopper would (up to a minute). sync_deals pulls new deals in and reveal_pending reads a few code-less pages.',
+    'shopper would (up to a minute). sync_deals pulls new deals in, sync_reddit reads the newest r/couponcodes posts, and ' +
+    'reveal_pending reads a few code-less pages.',
 };
 
 const couponFields = 'c.id, c.code, c.title, c.description, c.discount, c.discount_type, c.discount_value, c.expiry_date, c.url, c.votes, c.verified, c.code_checked_at';
@@ -128,6 +130,15 @@ export const TOOLS: McpTool[] = [
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     async run() {
       return syncNichedbDeals(getDb());
+    },
+  },
+  {
+    name: 'sync_reddit',
+    description:
+      "Read the newest posts of r/couponcodes into stores and coupons: a post with a code or a link to the store becomes a listing, a request for a code is skipped. The site polls this itself every five minutes; throttled to one run per four minutes.",
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    async run() {
+      return syncRedditCouponcodes(getDb());
     },
   },
   {

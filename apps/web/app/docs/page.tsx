@@ -381,6 +381,13 @@ export default function DocsPage() {
             example="curl -X POST https://c0upons.com/api/sync/nichedb"
             response={`{ "ok": true, "skipped": false, "fetched": 267, "upserted": 239, "stores": 36, "cursor": 8317456, "more": false }`}
           />
+          <Endpoint
+            method="POST"
+            path="/api/sync/reddit"
+            desc="Read the newest r/couponcodes posts into stores and coupons. A post with a code or a link to the store becomes a listing; a request for a code is skipped. The server polls this itself every five minutes; throttled to one run per four minutes."
+            example="curl -X POST https://c0upons.com/api/sync/reddit"
+            response={`{ "ok": true, "skipped": false, "via": "relay", "fetched": 25, "taken": 18, "inserted": 2, "updated": 16, "declined": 7, "stores": 17, "newest": "t3_1wf5dvp" }`}
+          />
         </section>
 
         {/* MCP */}
@@ -407,6 +414,7 @@ curl -X POST https://c0upons.com/mcp -H 'content-type: application/json' \\
               ['get_coupon', 'One coupon by id.'],
               ['reveal_code', "Read a coupon's deal page with a browser and return the code it finds."],
               ['sync_deals', 'Pull the next deals from nichedb.dev.'],
+              ['sync_reddit', 'Read the newest r/couponcodes posts.'],
               ['reveal_pending', 'Read the pages of up to three code-less coupons.'],
             ].map(([name, desc]) => (
               <div key={name} className="border border-gray-200 rounded-lg px-4 py-3">

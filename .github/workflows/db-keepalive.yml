@@ -82,3 +82,19 @@ jobs:
           if [ "$status" != "200" ]; then
             echo "::warning::reveal sweep answered HTTP $status"
           fi
+      # r/couponcodes is read by the server's own five-minute poller; this is
+      # the backstop for a server that was just restarted or is between polls.
+      # The route throttles itself to one run per four minutes.
+      - name: Sync listings from r/couponcodes
+        env:
+          BASE_URL: ${{ vars.KEEPALIVE_BASE_URL || 'https://c0upons.com' }}
+        run: |
+          set -uo pipefail
+          status=$(curl -sS -m 90 -X POST -o reddit.json -w '%{http_code}' \
+            "$BASE_URL/api/sync/reddit" || echo 000)
+          echo "reddit: HTTP $status"
+          cat reddit.json || true
+          echo
+          if [ "$status" != "200" ]; then
+            echo "::warning::reddit sync answered HTTP $status"
+          fi
