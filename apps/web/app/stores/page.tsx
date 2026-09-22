@@ -70,7 +70,7 @@ export default async function StoresPage() {
             <a
               key={l}
               href={`#letter-${l}`}
-              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded font-semibold text-sm hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
+              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded font-semibold text-sm text-gray-700 hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
             >
               {l}
             </a>
