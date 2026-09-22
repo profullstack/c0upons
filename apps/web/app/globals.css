@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
+/*
+ * The UI is light-only: every surface is hard-coded (bg-white, text-gray-*).
+ * Do not reintroduce a prefers-color-scheme override here. The body rule below
+ * beats every Tailwind utility unless it stays inside @layer base, and flipping
+ * --foreground to a light value turns any element without an explicit text
+ * colour white on white (this is what hid the A-Z index nav on /stores).
+ */
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #0f172a;
 }
@@ -12,40 +20,29 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #f1f5f9;
+/* Kept in @layer base so a utility class on the same element still wins. */
+@layer base {
+  html {
+    scroll-behavior: smooth;
   }
-}
 
-html {
-  scroll-behavior: smooth;
-}
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-input, select, textarea {
-  color: #0f172a;
-  background-color: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
   input, select, textarea {
-    color: #f1f5f9;
-    background-color: #1e293b;
+    color: #0f172a;
+    background-color: #ffffff;
   }
-}
 
-::selection {
-  background: #fed7aa;
-  color: #7c2d12;
-}
+  ::selection {
+    background: #fed7aa;
+    color: #7c2d12;
+  }
 
-pre {
-  overflow-x: auto;
+  pre {
+    overflow-x: auto;
+  }
 }
