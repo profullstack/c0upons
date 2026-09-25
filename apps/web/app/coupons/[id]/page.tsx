@@ -103,6 +103,16 @@ export default async function CouponPage({ params }: { params: Promise<{ id: str
         <div className="flex flex-col gap-3">
           {coupon.code ? (
             <CopyButton code={coupon.code} />
+          ) : coupon.url && coupon.source === 'flipp' ? (
+            // A grocery weekly-ad price: nothing to reveal, just the store.
+            <a
+              href={coupon.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+            >
+              Shop at {coupon.store_name} →
+            </a>
           ) : coupon.url ? (
             // No code on file: show the link now and have a browser read the
             // deal page for a hidden one (see /api/coupons/[id]/reveal).

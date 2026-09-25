@@ -25,7 +25,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     const db = getDb();
     await ensureRevealColumns(db);
     const rows = await db.sql`
-      SELECT c.id, c.code, c.url, c.title, c.code_checked_at, s.name AS store_name
+      SELECT c.id, c.code, c.url, c.title, c.code_checked_at, c.source, s.name AS store_name
       FROM coupons c JOIN stores s ON s.id = c.store_id
       WHERE c.id = ${couponId}
     `;
@@ -33,6 +33,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     const coupon = rows[0];
     if (coupon.code) return NextResponse.json({ code: coupon.code, cached: true });
     if (!coupon.url) return NextResponse.json({ code: null, reason: 'no page to read' });
+    // A weekly-ad price is the deal itself; a circular hides no code.
+    if (coupon.source === 'flipp') return NextResponse.json({ code: null, reason: 'weekly ad price, no code' });
 
     const checked = coupon.code_checked_at ? new Date(coupon.code_checked_at).getTime() : 0;
     if (checked && Date.now() - checked < RECHECK_HOURS * 3_600_000) {

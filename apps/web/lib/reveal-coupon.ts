@@ -148,14 +148,15 @@ export async function sweepReveals(db: SqlDb, d: RevealDeps, opts: SweepOptions 
   const candidates = (await db.sql`
     SELECT c.id, c.url, c.title, s.name AS store_name
     FROM coupons c JOIN stores s ON s.id = c.store_id
-    WHERE c.code IS NULL AND c.url IS NOT NULL
+    WHERE c.code IS NULL AND c.url IS NOT NULL AND (c.source IS NULL OR c.source <> 'flipp')
       AND (c.code_checked_at IS NULL OR c.code_checked_at < ${cutoff})
     ORDER BY c.votes DESC, c.created_at DESC
     LIMIT ${limit}
   `) as CouponToReveal[];
   const [{ n }] = await db.sql`
     SELECT COUNT(*) AS n FROM coupons
-    WHERE code IS NULL AND url IS NOT NULL AND (code_checked_at IS NULL OR code_checked_at < ${cutoff})
+    WHERE code IS NULL AND url IS NOT NULL AND (source IS NULL OR source <> 'flipp')
+      AND (code_checked_at IS NULL OR code_checked_at < ${cutoff})
   `;
 
   const checked: RevealOutcome[] = [];

@@ -182,12 +182,12 @@ export async function ensureSyncSchema(db: SqlDb): Promise<void> {
   `;
 }
 
-async function getState(db: SqlDb, key: string): Promise<string | null> {
+export async function getState(db: SqlDb, key: string): Promise<string | null> {
   const rows = await db.sql`SELECT value FROM sync_state WHERE key = ${key} LIMIT 1`;
   return rows.length ? (rows[0].value as string | null) : null;
 }
 
-async function setState(db: SqlDb, key: string, value: string): Promise<void> {
+export async function setState(db: SqlDb, key: string, value: string): Promise<void> {
   await db.sql`
     INSERT INTO sync_state (key, value, updated_at) VALUES (${key}, ${value}, CURRENT_TIMESTAMP)
     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
@@ -195,7 +195,7 @@ async function setState(db: SqlDb, key: string, value: string): Promise<void> {
 }
 
 /** Resolve the store by slug, creating it, and fill in a website or logo it lacked. */
-async function upsertStore(db: SqlDb, store: StoreRow): Promise<number> {
+export async function upsertStore(db: SqlDb, store: StoreRow): Promise<number> {
   await db.sql`
     INSERT INTO stores (name, slug, website, logo_url)
     VALUES (${store.name}, ${store.slug}, ${store.website}, ${store.logo_url})
@@ -207,7 +207,7 @@ async function upsertStore(db: SqlDb, store: StoreRow): Promise<number> {
   return Number(rows[0].id);
 }
 
-async function upsertCoupon(db: SqlDb, storeId: number, row: CouponRow): Promise<void> {
+export async function upsertCoupon(db: SqlDb, storeId: number, row: CouponRow): Promise<void> {
   await db.sql`
     INSERT INTO coupons (
       store_id, code, title, description, discount, discount_type, discount_value,

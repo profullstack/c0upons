@@ -31,6 +31,8 @@ export interface Coupon {
   url: string | null;
   image_url: string | null;
   created_at: string;
+  /** Where a synced row came from: 'nichedb', 'reddit', 'flipp' (a grocery weekly ad); null when submitted. */
+  source?: string | null;
   store_name?: string;
   store_slug?: string;
   store_logo?: string | null;
