@@ -16,6 +16,7 @@
       "reveal_code",
       "sync_deals",
       "sync_reddit",
+      "sync_grocery",
       "reveal_pending"
     ]
   },
@@ -29,6 +30,7 @@
     "reveal_code",
     "sync_deals",
     "sync_reddit",
+    "sync_grocery",
     "reveal_pending"
   ],
   "catalogs": ["https://openmcp.logicsrc.com"]

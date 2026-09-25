@@ -145,6 +145,19 @@ program
       } catch {
         reddit.fail('Failed to reach c0upons.');
       }
+      const grocery = ora('Reading the next grocery weekly ads...').start();
+      try {
+        const res = await fetch(`${BASE_URL}/api/sync/grocery`, { method: 'POST' });
+        const data = (await res.json()) as { error?: string; skipped?: boolean; written?: number; pruned?: number; remaining?: number; flyers?: { store: string; written: number }[] };
+        if (!res.ok) grocery.fail(String(data.error ?? res.statusText));
+        else if (data.skipped) grocery.info(chalk.gray('Read recently; skipped.'));
+        else {
+          const read = (data.flyers ?? []).map((f) => `${f.store} ${f.written}`).join(', ') || 'none';
+          grocery.succeed(`${String(data.written)} prices (${read}), ${String(data.pruned)} expired removed, ${String(data.remaining)} flyers left`);
+        }
+      } catch {
+        grocery.fail('Failed to reach c0upons.');
+      }
     }
     if (!opts.syncOnly) {
       const spinner = ora('Reading deal pages for coupons without a code...').start();

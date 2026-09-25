@@ -388,6 +388,13 @@ export default function DocsPage() {
             example="curl -X POST https://c0upons.com/api/sync/reddit"
             response={`{ "ok": true, "skipped": false, "via": "relay", "fetched": 25, "taken": 18, "inserted": 2, "updated": 16, "declined": 7, "stores": 17, "newest": "t3_1wf5dvp" }`}
           />
+          <Endpoint
+            method="POST"
+            path="/api/sync/grocery"
+            desc="Read the next few grocery weekly ads (Raley's, Safeway, Walmart, Target, Costco, H-E-B, Publix and more, across twenty US metros) into stores and coupons, one row per advertised price, and remove rows whose week has ended. The server polls this itself every ten minutes; throttled to one run per eight minutes."
+            example="curl -X POST https://c0upons.com/api/sync/grocery"
+            response={`{ "ok": true, "skipped": false, "listed": 212, "remaining": 209, "pruned": 0, "written": 331, "flyers": [{ "id": 8141217, "store": "Raley's", "postal_code": "95814", "items": 123, "written": 123 }] }`}
+          />
         </section>
 
         {/* MCP */}
@@ -415,6 +422,7 @@ curl -X POST https://c0upons.com/mcp -H 'content-type: application/json' \\
               ['reveal_code', "Read a coupon's deal page with a browser and return the code it finds."],
               ['sync_deals', 'Pull the next deals from nichedb.dev.'],
               ['sync_reddit', 'Read the newest r/couponcodes posts.'],
+              ['sync_grocery', 'Read the next grocery weekly ads.'],
               ['reveal_pending', 'Read the pages of up to three code-less coupons.'],
             ].map(([name, desc]) => (
               <div key={name} className="border border-gray-200 rounded-lg px-4 py-3">
