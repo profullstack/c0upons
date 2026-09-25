@@ -391,7 +391,7 @@ export default function DocsPage() {
           <Endpoint
             method="POST"
             path="/api/sync/grocery"
-            desc="Read the next few grocery weekly ads (Raley's, Safeway, Walmart, Target, Costco, H-E-B, Publix and more, across twenty US metros) into stores and coupons, one row per advertised price, and remove rows whose week has ended. The server polls this itself every ten minutes; throttled to one run per eight minutes."
+            desc="Read the next few grocery weekly ads (Raley's, Safeway, Walmart, Target, Costco, H-E-B, Publix and more, across twenty US metros) into stores and coupons, one row per advertised price, and remove rows whose week has ended. The server polls this itself every five minutes; throttled to one run per four minutes."
             example="curl -X POST https://c0upons.com/api/sync/grocery"
             response={`{ "ok": true, "skipped": false, "listed": 212, "remaining": 209, "pruned": 0, "written": 331, "flyers": [{ "id": 8141217, "store": "Raley's", "postal_code": "95814", "items": 123, "written": 123 }] }`}
           />

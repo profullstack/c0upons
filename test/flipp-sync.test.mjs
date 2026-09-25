@@ -16,7 +16,7 @@ const require = createRequire(new URL('../apps/web/package.json', import.meta.ur
 // Production is Postgres through libsql-pg; C0UPONS_TEST_DATABASE_URL=postgres://... runs this there too.
 const pgUrl = process.env.C0UPONS_TEST_DATABASE_URL;
 const { createClient } = await import(require.resolve(pgUrl ? '@profullstack/libsql-pg' : '@libsql/client'));
-const { syncFlippWeeklyAds, toCouponRow, priceLabel, storeSlug, flyerStore } = await import('../apps/web/lib/flipp-sync.ts');
+const { syncFlippWeeklyAds, toCouponRow, priceLabel, storeSlug, flyerStore, readOrder } = await import('../apps/web/lib/flipp-sync.ts');
 const { sweepReveals } = await import('../apps/web/lib/reveal-coupon.ts');
 
 const dir = mkdtempSync(join(tmpdir(), 'c0upons-flipp-'));
@@ -147,6 +147,12 @@ test('the badge carries the unit and the fine print goes to the description', ()
   assert.equal(toCouponRow(ITEMS[8141217][3], f), null, 'an unpriced tile is not a row');
 });
 
+test('the home metro is read first, even when another metro has a flyer ending sooner', () => {
+  const q = (id, postal_code, valid_to) => ({ id, merchant: String(id), merchant_id: id, logo: null, postal_code, valid_to });
+  const queue = [q(1, '10001', '2026-09-26'), q(2, '95814', '2026-09-29'), q(3, '95814', '2026-09-26'), q(4, '99999', '2026-09-20')];
+  assert.deepEqual(queue.sort(readOrder(['95814', '10001'])).map((f) => f.id), [3, 2, 1, 4]);
+});
+
 test('a run reads the first flyers of the queue, the next run carries on', async () => {
   const { fetchImpl, calls } = fakeFlipp();
   const r1 = await syncFlippWeeklyAds(db, opts(fetchImpl, '2026-09-25T20:00:00Z'));
@@ -155,6 +161,7 @@ test('a run reads the first flyers of the queue, the next run carries on', async
   assert.equal(r1.listed, 4);
   assert.equal(r1.flyers.length, 2);
   assert.equal(r1.remaining, 2);
+  assert.ok(r1.flyers.every((f) => f.postal_code === '95814'), 'Sacramento is read before New York');
   assert.equal(calls.filter((u) => u.includes('/flyers?')).length, 2, 'one listing per postal code');
 
   const r2 = await syncFlippWeeklyAds(db, opts(fetchImpl, '2026-09-25T20:10:00Z'));
