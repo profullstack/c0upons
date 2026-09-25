@@ -3,19 +3,14 @@ import { getDb } from '@/lib/db';
 import { dbErrorResponse } from '@/lib/api-error';
 
 // Never cache: a cached 200 would keep reporting health after the database goes
-// away, and the keep-alive query has to actually reach Turso to count as
-// activity.
+// away.
 export const dynamic = 'force-dynamic';
 
 /**
- * Liveness probe for the database, and the query the keep-alive schedule runs.
- *
- * Turso archives a free group after ten days without activity, and an archived
- * group needs an explicit unarchive call before it serves queries again. So the
- * cheapest cure is to never go idle: `.github/workflows/db-keepalive.yml` calls
- * this on a schedule, and the `SELECT 1` is the activity that resets the clock.
- * It doubles as monitoring — an unreachable database answers 503 here loudly
- * instead of silently emptying the pages that swallow their own DB errors.
+ * Liveness probe for the database: an unreachable database answers 503 here
+ * loudly instead of silently emptying the pages that swallow their own DB
+ * errors. (It once also kept a Turso free-tier group from being archived; the
+ * database is self-hosted Postgres now and needs no keep-alive.)
  */
 export async function GET() {
   try {

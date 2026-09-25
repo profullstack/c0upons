@@ -1,17 +1,45 @@
 import 'server-only';
-import { createClient, type Client, type InValue } from '@libsql/client';
+import type { Client, InValue } from '@libsql/client';
+import { createClient as createPostgresClient } from '@profullstack/libsql-pg';
+import { createRequire } from 'node:module';
 import { loadRootEnv } from './root-env';
 
 let client: Client | null = null;
+const POSTGRES_URL = /^postgres(ql)?:\/\//i;
+const require_ = createRequire(import.meta.url);
+
+/**
+ * The database URL: `DATABASE_URL=postgres://...` in production (the shared
+ * Postgres cluster on dev2, reached through @profullstack/libsql-pg, which keeps
+ * the @libsql/client surface and rewrites the SQLite idioms per statement), or a
+ * `file:` path for local runs and the tests. `TURSO_DATABASE_URL` is still read
+ * as a fallback name for a `file:` URL; a `libsql://` value is refused, because
+ * the data left Turso for Postgres in 2026-09.
+ */
+export function databaseUrl(): string {
+  loadRootEnv();
+  const url = process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL;
+  if (!url) throw new Error('DATABASE_URL is not set (postgres://... in production, file:... locally)');
+  if (!POSTGRES_URL.test(url) && !url.startsWith('file:')) {
+    throw new Error(
+      `DATABASE_URL must be a postgres:// URL (production) or a file: path (local); got "${url.split(':')[0]}:". ` +
+        'Turso/libsql:// is no longer supported: the data lives in Postgres now.',
+    );
+  }
+  return url;
+}
 
 function getClient(): Client {
   if (client) return client;
-  loadRootEnv();
-  const url = process.env.TURSO_DATABASE_URL;
-  if (!url) throw new Error('TURSO_DATABASE_URL is not set');
-  // A `file:` URL needs no token, which is what makes local runs and tests
-  // possible without production credentials.
-  client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+  const url = databaseUrl();
+  if (POSTGRES_URL.test(url)) {
+    client = createPostgresClient({ url }) as unknown as Client;
+  } else {
+    // @libsql/client is a devDependency, loaded lazily: the production image
+    // needs neither it nor its native binding.
+    const { createClient } = require_('@libsql/client') as typeof import('@libsql/client');
+    client = createClient({ url });
+  }
   return client;
 }
 
@@ -33,10 +61,9 @@ function bind(value: unknown): InValue {
  * objects, so callers keep working unchanged — `rows.length`, destructuring a
  * single COUNT row, and `NextResponse.json(rows)` all behave as before.
  *
- * Unlike the SQLite Cloud driver this replaces, there is no long-lived
- * websocket to go stale, so no reconnect dance is needed: the HTTP client
- * establishes a connection per request and a dropped one cannot poison the
- * cached handle the way it once silently emptied /blog.
+ * On Postgres the handle is a connection pool; a dropped connection is
+ * replaced by the pool rather than poisoning the cached handle the way the old
+ * SQLite Cloud websocket once silently emptied /blog.
  */
 export function getDb() {
   return {
@@ -54,14 +81,11 @@ export function getDb() {
   };
 }
 
-// Turso scales an idle free database to zero and wakes it automatically on the
-// next request, so a brief stall is normal rather than an outage. A group left
-// idle for ten days is archived instead, and that state does need an explicit
-// unarchive call — the shapes below are the ones seen for a database that is
-// gone or unreachable rather than merely asleep. Callers use this to tell
-// "c0upons is down" (transient, 503) apart from "c0upons is broken" (a real
-// 500).
+// The shapes an unreachable or missing database produces (kept from the Turso
+// days; a Postgres connection refused or a pool timeout reads the same way).
+// Callers use this to tell "c0upons is down" (transient, 503) apart from
+// "c0upons is broken" (a real 500).
 export function isDbPaused(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
-  return /archived|not found|unavailable|SERVER_ERROR|502|503/i.test(msg);
+  return /archived|not found|unavailable|SERVER_ERROR|502|503|ECONNREFUSED|ECONNRESET|timeout exceeded when trying to connect/i.test(msg);
 }
