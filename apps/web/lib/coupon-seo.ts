@@ -55,12 +55,24 @@ export function couponTitle(coupon: Coupon): string {
   return truncate(store && !redundant ? `${store}: ${title}` : title, 62);
 }
 
+/**
+ * The badge as a phrase: "20% off", "$10 off" (not "$10 off off"), and a
+ * grocery weekly-ad price left as the price it is ("$0.97/lb", "2 for $10.00").
+ */
+export function discountPhrase(coupon: Pick<Coupon, 'discount' | 'source'>): string | null {
+  const d = coupon.discount?.trim();
+  if (!d) return null;
+  if (coupon.source === 'flipp' || /\boff\b/i.test(d)) return d;
+  return `${d} off`;
+}
+
 /** The meta description: discount, the deal itself, the code, the expiry. */
 export function couponDescription(coupon: Coupon): string {
   const store = storeName(coupon);
   const parts: string[] = [];
 
-  if (coupon.discount) parts.push(store ? `${coupon.discount} off at ${store}.` : `${coupon.discount} off.`);
+  const discount = discountPhrase(coupon);
+  if (discount) parts.push(store ? `${discount} at ${store}.` : `${discount}.`);
   parts.push(plainText(coupon.description || coupon.title).replace(/\s*\.?\s*$/, '.'));
   // The code is already rendered in the page body, so putting it in the
   // snippet gives nothing away and is the strongest reason to click.

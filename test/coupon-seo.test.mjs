@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { couponTitle, couponDescription, couponJsonLd, couponShareImage, plainText, truncate } = await import(
+const { couponTitle, couponDescription, discountPhrase, couponJsonLd, couponShareImage, plainText, truncate } = await import(
   '../apps/web/lib/coupon-seo.ts'
 );
 
@@ -105,6 +105,17 @@ test('description carries discount, code and expiry inside the snippet cap', () 
   assert.ok(description.includes('Use code SAVE20.'), description);
   assert.ok(description.includes('Expires 2026-12-23.'), description);
   assert.ok(description.length <= 158, `${description.length} > 158`);
+});
+
+test('a badge that already says "off" is not doubled, and a weekly-ad price is not a discount', () => {
+  assert.equal(discountPhrase({ discount: '20%', source: null }), '20% off');
+  assert.equal(discountPhrase({ discount: '$10 off', source: 'nichedb' }), '$10 off');
+  assert.equal(discountPhrase({ discount: '$0.97/lb', source: 'flipp' }), '$0.97/lb');
+  assert.equal(discountPhrase({ discount: null, source: null }), null);
+  const grocery = couponDescription(
+    coupon({ code: null, discount: '2 for $12.00', source: 'flipp', store_name: 'Target', title: 'Bertolli frozen meals' })
+  );
+  assert.ok(grocery.startsWith('2 for $12.00 at Target.'), grocery);
 });
 
 test('description omits the code when there is none on file', () => {
