@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getCoupon } from './coupon';
-import { truncate } from '@/lib/coupon-seo';
+import { plainText, truncate } from '@/lib/coupon-seo';
 
 // Node runtime, not edge: this reads the coupon from Turso through the same
 // server-only handle the page uses.
@@ -13,7 +13,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const coupon = await getCoupon(id);
 
   const store = coupon?.store_name?.trim() || 'c0upons';
-  const title = coupon ? truncate(coupon.title, 88) : 'Community Coupon Codes & Deals';
+  const title = coupon ? truncate(plainText(coupon.title), 88) : 'Community Coupon Codes & Deals';
   const discount = coupon?.discount?.trim() || null;
   const code = coupon?.code?.trim() || null;
 

@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { couponTitle, couponDescription, couponJsonLd, couponShareImage, truncate } = await import(
+const { couponTitle, couponDescription, couponJsonLd, couponShareImage, plainText, truncate } = await import(
   '../apps/web/lib/coupon-seo.ts'
 );
 
@@ -47,6 +47,39 @@ test('truncate leaves a short string untouched and collapses whitespace', () => 
 test('truncate still cuts a single unbroken word', () => {
   const out = truncate('a'.repeat(50), 20);
   assert.equal(out.length, 20);
+});
+
+// The exact description coupon 80013 carries in production, via the
+// Slickdeals-shaped feed: bare bracketed domain, asterisk emphasis.
+const SCRAPED =
+  "Macy's [macys.com] has *Christmas Comforter Sets* on sale from *$24.99*. Select free store pickup where available.";
+
+test('plainText strips the markup scraped deal text arrives with', () => {
+  assert.equal(
+    plainText(SCRAPED),
+    "Macy's has Christmas Comforter Sets on sale from $24.99. Select free store pickup where available."
+  );
+});
+
+test('plainText keeps a markdown link label and drops the url', () => {
+  assert.equal(plainText('See [the deal](https://example.com/x) now'), 'See the deal now');
+});
+
+test('plainText leaves ordinary text, bracketed asides and lone asterisks alone', () => {
+  assert.equal(plainText('Save 20% on 3 * 4 packs [limited]'), 'Save 20% on 3 * 4 packs [limited]');
+});
+
+test('the meta description carries no leftover markup', () => {
+  const description = couponDescription(coupon({ description: SCRAPED }));
+  assert.ok(!description.includes('*'), description);
+  assert.ok(!description.includes('[macys.com]'), description);
+  assert.ok(description.includes('Christmas Comforter Sets'), description);
+});
+
+test('JSON-LD name and description are plain text too', () => {
+  const [offer] = couponJsonLd(coupon({ description: SCRAPED, title: '*Deal* of the [day]' }));
+  assert.ok(!offer.description.includes('*'), offer.description);
+  assert.equal(offer.name, 'Deal of the [day]');
 });
 
 test('title names the store and the deal', () => {
