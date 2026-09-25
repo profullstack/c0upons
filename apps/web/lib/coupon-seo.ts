@@ -18,6 +18,24 @@ export function truncate(text: string, max: number): string {
   return `${kept.replace(/[\s,.;:—–-]+$/, '')}…`;
 }
 
+/**
+ * Flatten the light markup that rides along on scraped deal text.
+ *
+ * Feeds like Slickdeals hand us "Macy's [macys.com] has *Comforter Sets* on
+ * sale from *$24.99*", and asterisks and bare bracketed domains read as noise
+ * in a search snippet, which is the one place this text has to stand alone.
+ */
+export function plainText(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\((?:[^)]*)\)/g, '$1') // [label](url) -> label
+    .replace(/\[([\w.-]+\.[a-z]{2,})\]/gi, '') // a bare [macys.com] -> nothing
+    .replace(/(\*\*|__)(.+?)\1/g, '$2') // **bold** / __bold__
+    .replace(/(?<![\w*])\*(?!\s)([^*]+?)(?<!\s)\*(?![\w*])/g, '$1') // *emphasis*
+    .replace(/\s+([,.;:!?])/g, '$1') // tidy the gaps the removals leave
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function storeName(coupon: Coupon): string | null {
   const name = coupon.store_name?.trim();
   return name ? name : null;
@@ -32,7 +50,7 @@ function storeName(coupon: Coupon): string | null {
  */
 export function couponTitle(coupon: Coupon): string {
   const store = storeName(coupon);
-  const title = coupon.title.trim();
+  const title = plainText(coupon.title);
   const redundant = store && title.toLowerCase().includes(store.toLowerCase());
   return truncate(store && !redundant ? `${store}: ${title}` : title, 62);
 }
@@ -43,7 +61,7 @@ export function couponDescription(coupon: Coupon): string {
   const parts: string[] = [];
 
   if (coupon.discount) parts.push(store ? `${coupon.discount} off at ${store}.` : `${coupon.discount} off.`);
-  parts.push((coupon.description?.trim() || coupon.title.trim()).replace(/\s*\.?\s*$/, '.'));
+  parts.push(plainText(coupon.description || coupon.title).replace(/\s*\.?\s*$/, '.'));
   // The code is already rendered in the page body, so putting it in the
   // snippet gives nothing away and is the strongest reason to click.
   if (coupon.code) parts.push(`Use code ${coupon.code}.`);
@@ -94,8 +112,8 @@ export function couponJsonLd(coupon: Coupon): object[] {
     '@type': 'Offer',
     '@id': url,
     url,
-    name: coupon.title.trim(),
-    description: coupon.description?.trim() || couponDescription(coupon),
+    name: plainText(coupon.title),
+    description: coupon.description ? plainText(coupon.description) : couponDescription(coupon),
     category: 'Coupon',
     availability: 'https://schema.org/InStock',
     image: couponImage(coupon),
@@ -117,7 +135,7 @@ export function couponJsonLd(coupon: Coupon): object[] {
     { name: 'Home', item: BASE },
     { name: 'Stores', item: `${BASE}/stores` },
     ...(store && coupon.store_slug ? [{ name: store, item: `${BASE}/stores/${coupon.store_slug}` }] : []),
-    { name: truncate(coupon.title, 70), item: url },
+    { name: truncate(plainText(coupon.title), 70), item: url },
   ];
 
   const breadcrumbs = {
