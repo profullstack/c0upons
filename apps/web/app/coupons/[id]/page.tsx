@@ -1,26 +1,48 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import CopyButton from '@/components/CopyButton';
 import RevealCode from '@/components/RevealCode';
-import { getDb } from '@/lib/db';
-import { Coupon } from '@/lib/types';
+import { getCoupon } from './coupon';
+import { BASE, couponDescription, couponJsonLd, couponShareImage, couponTitle } from '@/lib/coupon-seo';
 
-async function getCoupon(id: string): Promise<Coupon | null> {
-  try {
-    const db = getDb();
-    const rows = await db.sql`
-      SELECT c.*, s.name AS store_name, s.slug AS store_slug, s.logo_url AS store_logo
-      FROM coupons c
-      JOIN stores s ON s.id = c.store_id
-      WHERE c.id = ${parseInt(id)}
-    `;
-    return rows.length ? rows[0] : null;
-  } catch {
-    return null;
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const coupon = await getCoupon(id);
+  if (!coupon) {
+    return { title: 'Coupon not found', robots: { index: false, follow: true } };
   }
+
+  const url = `${BASE}/coupons/${coupon.id}`;
+  const title = couponTitle(coupon);
+  const description = couponDescription(coupon);
+  const image = couponShareImage(coupon);
+
+  return {
+    title,
+    description,
+    // Without this every coupon page inherits the root layout's canonical and
+    // tells Google it is a duplicate of the homepage.
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'c0upons',
+      type: 'website',
+      locale: 'en_US',
+      images: [{ url: image, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
 }
 
 export default async function CouponPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,6 +52,25 @@ export default async function CouponPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="max-w-xl mx-auto">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(couponJsonLd(coupon)) }}
+      />
+
+      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-gray-400">
+        <Link href="/" className="hover:text-orange-500">Home</Link>
+        <span className="mx-1">/</span>
+        <Link href="/stores" className="hover:text-orange-500">Stores</Link>
+        {coupon.store_slug && (
+          <>
+            <span className="mx-1">/</span>
+            <Link href={`/stores/${coupon.store_slug}`} className="hover:text-orange-500">
+              {coupon.store_name}
+            </Link>
+          </>
+        )}
+      </nav>
+
       <div className="bg-white border border-gray-200 rounded-2xl p-8 flex flex-col gap-6">
         <div className="flex items-center gap-4">
           {coupon.store_logo ? (

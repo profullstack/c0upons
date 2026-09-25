@@ -1,12 +1,15 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import CouponCard from '@/components/CouponCard';
 import { getDb } from '@/lib/db';
 import { Coupon, Store } from '@/lib/types';
+import { BASE, truncate } from '@/lib/coupon-seo';
 
-async function getStore(slug: string): Promise<{ store: Store; coupons: Coupon[] } | null> {
+const getStore = cache(async (slug: string): Promise<{ store: Store; coupons: Coupon[] } | null> => {
   try {
     const db = getDb();
     const stores = await db.sql`SELECT * FROM stores WHERE slug = ${slug}`;
@@ -20,6 +23,39 @@ async function getStore(slug: string): Promise<{ store: Store; coupons: Coupon[]
   } catch {
     return null;
   }
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await getStore(slug);
+  if (!data) return { title: 'Store not found', robots: { index: false, follow: true } };
+
+  const { store, coupons } = data;
+  const url = `${BASE}/stores/${slug}`;
+  const title = truncate(`${store.name} Coupon Codes & Deals`, 62);
+  const count = coupons.length;
+  const description = truncate(
+    count > 0
+      ? `${count} ${store.name} coupon code${count === 1 ? '' : 's'} and deals, posted and voted on by the c0upons community. Free to use, no account needed.`
+      : `${store.name} coupon codes and deals on c0upons. Free to use, no account needed.`,
+    158
+  );
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'c0upons',
+      type: 'website',
+      locale: 'en_US',
+      images: [{ url: `${BASE}/opengraph-image`, width: 1200, height: 630, alt: title }],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: [`${BASE}/opengraph-image`] },
+  };
 }
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {

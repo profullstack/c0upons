@@ -103,6 +103,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     description,
+    // Declared here rather than in the root layout, where it would be
+    // inherited by — and so mis-canonicalize — every other route.
+    alternates: { canonical: BASE },
     openGraph: { description },
     twitter: { description },
     other: {
