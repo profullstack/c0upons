@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getCoupon } from './coupon';
-import { plainText, truncate } from '@/lib/coupon-seo';
+import { discountPhrase, plainText, truncate } from '@/lib/coupon-seo';
 
 // Node runtime, not edge: this reads the coupon from Turso through the same
 // server-only handle the page uses.
@@ -14,7 +14,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
   const store = coupon?.store_name?.trim() || 'c0upons';
   const title = coupon ? truncate(plainText(coupon.title), 88) : 'Community Coupon Codes & Deals';
-  const discount = coupon?.discount?.trim() || null;
+  const discount = coupon ? discountPhrase(coupon) : null;
   const code = coupon?.code?.trim() || null;
 
   return new ImageResponse(
@@ -36,9 +36,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ display: 'flex', fontSize: 34, fontWeight: 700, color: '#374151' }}>{store}</div>
           {discount && (
-            // One interpolated string, not `{discount} off`: Satori treats the
-            // latter as two child nodes and refuses a div without an explicit
-            // display, which fails the whole image.
+            // One string child ("20% off", "$0.97/lb"), never `{discount} off`:
+            // Satori treats that as two child nodes and refuses a div without
+            // an explicit display, which fails the whole image.
             <div
               style={{
                 display: 'flex',
@@ -50,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                 borderRadius: 12,
               }}
             >
-              {`${discount} off`}
+              {discount}
             </div>
           )}
         </div>
