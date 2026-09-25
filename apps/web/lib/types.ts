@@ -34,4 +34,5 @@ export interface Coupon {
   store_name?: string;
   store_slug?: string;
   store_logo?: string | null;
+  store_website?: string | null;
 }

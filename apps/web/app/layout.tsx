@@ -18,7 +18,11 @@ export const metadata: Metadata = {
   description: "Find and share the best coupon codes and deals, updated daily by the community. Browse coupons for hundreds of stores.",
   keywords: ["coupons", "promo codes", "deals", "discounts", "savings", "coupon codes"],
   authors: [{ name: "c0upons", url: BASE }],
-  alternates: { canonical: BASE },
+  // No `alternates.canonical` here on purpose. Metadata in a layout is
+  // inherited by every route below it, so a canonical set here told Google
+  // that each of the ~80k coupon pages was a duplicate of the homepage. The
+  // homepage declares its own in app/page.tsx; routes that need one declare it
+  // themselves, and the rest self-canonicalize.
   openGraph: {
     title: "c0upons — Community Coupon Codes",
     description: "Find and share the best coupon codes and deals, updated daily by the community.",
