@@ -12,6 +12,9 @@ const withSerwist = (cfg: NextConfig) => cfg;
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {},
+  // The database drivers stay out of the server bundle: pg (under
+  // @profullstack/libsql-pg) and, for local file: databases, the native libSQL client.
+  serverExternalPackages: ['@profullstack/libsql-pg', 'pg', '@libsql/client'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**' },

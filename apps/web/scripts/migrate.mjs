@@ -2,11 +2,14 @@
  * Database migration — creates tables and optionally seeds sample data.
  * Run with: pnpm db:migrate  (from apps/web)
  *
- * Requires TURSO_DATABASE_URL (and TURSO_AUTH_TOKEN for a remote database) in
- * the repo root .env or as env vars. A `file:` URL runs it against a local
- * SQLite file, which is how the schema is exercised in tests.
+ * Requires DATABASE_URL (postgres://... for the production database; a `file:`
+ * URL runs it against a local SQLite file, which is how the schema is exercised
+ * in tests; TURSO_DATABASE_URL is still accepted as the name). On Postgres the
+ * statements go through @profullstack/libsql-pg, whose schema converter turns
+ * the SQLite DDL below into Postgres DDL (identity keys, timestamptz, bigint).
  */
-import { createClient } from '@libsql/client';
+import { createRequire } from 'node:module';
+import { createClient as createPostgresClient } from '@profullstack/libsql-pg';
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -33,15 +36,18 @@ try {
   }
 } catch { /* no root .env — fall through to existing env */ }
 
-const url = process.env.TURSO_DATABASE_URL;
+const url = process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL;
 if (!url) {
-  console.error('TURSO_DATABASE_URL not set');
+  console.error('DATABASE_URL not set');
   process.exit(1);
 }
 
-// Mirrors lib/db.ts: expose `db.sql` as a tagged template so the migration
-// statements below read the same as the app's queries.
-const client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+// Mirrors lib/db.ts: Postgres through @profullstack/libsql-pg, a file: URL
+// through @libsql/client (a devDependency); expose `db.sql` as a tagged
+// template so the migration statements below read the same as the app's queries.
+const client = /^postgres(ql)?:\/\//i.test(url)
+  ? createPostgresClient({ url })
+  : createRequire(import.meta.url)('@libsql/client').createClient({ url });
 const db = {
   sql: async (strings, ...values) => {
     const rs = await client.execute({

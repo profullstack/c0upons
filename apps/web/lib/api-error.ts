@@ -18,7 +18,7 @@ export const DB_PAUSED_MESSAGE =
  * 500. Anything else keeps the route's own 500 and message, so a genuine defect
  * still reads as a defect. The `database_paused` code is the published wire
  * contract for clients that want to branch on this rather than parse prose; it
- * predates the move to Turso and is kept as-is so existing callers don't break.
+ * predates the move to Turso (and now to Postgres) and is kept as-is so existing callers don't break.
  */
 export function dbErrorResponse(err: unknown, fallback: string): NextResponse {
   if (isDbPaused(err)) {
