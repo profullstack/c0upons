@@ -2,7 +2,7 @@ import 'server-only';
 import { getDb } from './db';
 import { syncFlippWeeklyAds } from './flipp-sync';
 
-export const DEFAULT_INTERVAL_MINUTES = 10;
+export const DEFAULT_INTERVAL_MINUTES = 5;
 
 const KEY = Symbol.for('c0upons.flippPoller');
 type Holder = { timer?: ReturnType<typeof setInterval> };

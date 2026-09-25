@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-VERSION="1.8.1"
+VERSION="1.8.2"
 BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
 # Website root (for login + share links). Defaults to BASE_URL without /api.
 WEB_URL="${C0UPONS_WEB:-${BASE_URL%/api}}"

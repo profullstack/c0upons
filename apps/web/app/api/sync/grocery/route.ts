@@ -11,9 +11,9 @@ export const maxDuration = 60;
  * into stores and coupons, via Flipp's public flyer data.
  *
  * Keyless like the other syncs: the circulars are public, the write is an
- * idempotent upsert, and the callers are our own poller (every ten minutes
+ * idempotent upsert, and the callers are our own poller (every five minutes
  * from `instrumentation.ts`), the keepalive workflow and the CLI. A run
- * within eight minutes of the last one answers `skipped`.
+ * within four minutes of the last one answers `skipped`.
  */
 async function run() {
   try {

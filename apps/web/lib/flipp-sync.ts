@@ -18,9 +18,11 @@
  *    chain and flyer name, so Walmart's circular is read once and not once
  *    per city while regional chains (Raley's, H-E-B, Publix) still appear.
  * 3. Reads the next few flyers nobody has read yet and writes their items.
- *    A flyer is a few hundred rows, so a run takes three and the poller
- *    comes back for the rest; the whole country is read within hours of a
- *    new week starting.
+ *    A flyer is a few hundred rows, so a run takes six and the poller comes
+ *    back every five minutes for the rest: the whole country in about two
+ *    and a half hours. The first postal code's metro (Sacramento, where
+ *    Raley's lives) is read first, then the rest in list order, so a store
+ *    page someone was just sent to exists within minutes, not hours.
  *
  * WHERE THE UNIT COMES FROM
  *
@@ -46,8 +48,8 @@ import {
 export const SOURCE = 'flipp';
 export const API_URL = 'https://backflipp.wishabi.com/flipp';
 export const USER_AGENT = 'c0upons/1.8 (+https://c0upons.com; reads weekly grocery ads)';
-export const MIN_MINUTES_BETWEEN_RUNS = 8;
-export const MAX_FLYERS_PER_RUN = 3;
+export const MIN_MINUTES_BETWEEN_RUNS = 4;
+export const MAX_FLYERS_PER_RUN = 6;
 export const QUEUE_TTL_HOURS = 6;
 export const CATEGORIES = ['Groceries', 'Pharmacy'];
 
@@ -282,10 +284,20 @@ async function getJson<T>(doFetch: typeof fetch, url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+/** Home metro first (the postal codes' own order), soonest-expiring first within a metro. */
+export function readOrder(postalCodes: string[]): (a: QueuedFlyer, b: QueuedFlyer) => number {
+  const rank = (zip: string) => {
+    const i = postalCodes.indexOf(zip);
+    return i < 0 ? postalCodes.length : i;
+  };
+  return (a, b) =>
+    rank(a.postal_code) - rank(b.postal_code) || (a.valid_to ?? '9999').localeCompare(b.valid_to ?? '9999');
+}
+
 /**
  * The grocery flyers valid now across the postal codes, one per chain and
- * flyer name, first postal code wins. Soonest-expiring first, so a flyer
- * about to end is read before one that just started.
+ * flyer name, first postal code wins, in postal-code order and soonest
+ * expiring first within one.
  */
 export async function listFlyers(
   doFetch: typeof fetch,
@@ -320,7 +332,7 @@ export async function listFlyers(
       });
     }
   }
-  out.sort((a, b) => (a.valid_to ?? '9999').localeCompare(b.valid_to ?? '9999'));
+  out.sort(readOrder(opts.postalCodes));
   return out;
 }
 
@@ -435,7 +447,8 @@ export async function syncFlippWeeklyAds(db: SqlDb, opts: FlippSyncOptions = {})
 
   const doneRows = (await db.sql`SELECT key FROM sync_state WHERE key LIKE 'flipp:done:%'`) as Array<{ key: string }>;
   const done = new Set(doneRows.map((r) => Number(String(r.key).slice('flipp:done:'.length))));
-  const pending = queue.filter((f) => !done.has(f.id));
+  // Sorted here as well as when built, so a queue saved under an older order still reads home first.
+  const pending = queue.filter((f) => !done.has(f.id)).sort(readOrder(postalCodes));
 
   const flyers: FlippSyncResult['flyers'] = [];
   let written = 0;

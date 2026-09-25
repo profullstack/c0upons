@@ -146,7 +146,7 @@ export const TOOLS: McpTool[] = [
   {
     name: 'sync_grocery',
     description:
-      "Read the next few grocery weekly ads (Raley's, Safeway, Walmart, Target, Costco, H-E-B, Publix and the rest, across twenty US metros) into stores and coupons, one row per advertised price, and remove last week's. The site polls this itself every ten minutes; throttled to one run per eight minutes.",
+      "Read the next few grocery weekly ads (Raley's, Safeway, Walmart, Target, Costco, H-E-B, Publix and the rest, across twenty US metros) into stores and coupons, one row per advertised price, and remove last week's. The site polls this itself every five minutes; throttled to one run per four minutes.",
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     async run() {
       return syncFlippWeeklyAds(getDb());
