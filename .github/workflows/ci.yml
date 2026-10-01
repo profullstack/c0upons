@@ -1,7 +1,5 @@
-# Managed by sh1pt Actions Fleet
-# pack: node-pnpm-ci@1.0.0
-# install: sh1pt-actions-store
-# hash: sha256:aa7aeaf3bddaf7bf324ceb02f46ab421bb229d5f5917fdb6f7a1a948a4a9fcce
+# Bun CI (was the sh1pt-managed node-pnpm-ci pack; the app moved to Bun, so this
+# file is no longer managed by that pack).
 name: CI
 
 on:
@@ -18,20 +16,34 @@ concurrency:
 
 jobs:
   build:
+    name: install, typecheck, test, build (Bun)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
+      # The version comes from packageManager in package.json, the same Bun the
+      # image (.nixpacks/Dockerfile) pins.
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '22'
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm typecheck
-
-      - run: pnpm test
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run test
+        env:
+          CI: true
+      - run: bun run build:web
+        env:
+          NEXT_PUBLIC_BASE_URL: https://c0upons.com
+      # The production server must boot under Bun and answer.
+      - name: Standalone server answers under Bun
+        run: |
+          cd apps/web
+          cp -r public .next/standalone/apps/web/
+          cp -r .next/static .next/standalone/apps/web/.next/
+          (cd .next/standalone && PORT=3000 HOSTNAME=127.0.0.1 REDDIT_SYNC_INTERVAL_MINUTES=0 GROCERY_SYNC_INTERVAL_MINUTES=0 bun apps/web/server.js > "$RUNNER_TEMP/server.log" 2>&1 &)
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -H 'x-forwarded-proto: https' http://127.0.0.1:3000/robots.txt || true)
+            [ "$code" = 200 ] && { echo "/robots.txt -> $code"; exit 0; }
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/server.log"; exit 1

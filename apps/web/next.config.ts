@@ -10,6 +10,11 @@ loadRootEnv();
 const withSerwist = (cfg: NextConfig) => cfg;
 
 const nextConfig: NextConfig = {
+  // The image runs the standalone server under Bun (`bun apps/web/server.js`).
+  output: 'standalone',
+  // Trace from the workspace root (two levels up), never a lockfile further up the
+  // disk, so the standalone tree keeps the apps/web/ layout.
+  outputFileTracingRoot: new URL('../../', import.meta.url).pathname,
   reactStrictMode: true,
   turbopack: {},
   // The database drivers stay out of the server bundle: pg (under
