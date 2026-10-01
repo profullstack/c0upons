@@ -3,23 +3,19 @@
   "version": "1.8.2",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@9.15.0",
-  "engines": {
-    "node": ">=22.0.0",
-    "pnpm": ">=9.0.0"
-  },
+  "packageManager": "bun@1.4.0",
   "scripts": {
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=@c0upons/web",
     "dev:cli": "turbo run dev --filter=@c0upons/cli",
     "build": "turbo run build",
-    "start": "pnpm --filter @c0upons/web run start",
+    "start": "bun --filter @c0upons/web start",
     "build:web": "turbo run build --filter=@c0upons/web",
     "build:cli": "turbo run build --filter=@c0upons/cli",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
-    "test": "node --test test/*.test.mjs && turbo run test",
+    "test": "bun test test && turbo run test",
     "setup:hooks": "git config core.hooksPath .githooks && echo 'Git hooks configured'"
   },
   "devDependencies": {
@@ -32,5 +28,6 @@
     "url": "https://github.com/profullstack/c0upons.git"
   },
   "author": "Profullstack, Inc.",
-  "license": "MIT"
+  "license": "MIT",
+  "workspaces": ["apps/*"]
 }

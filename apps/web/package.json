@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "bun --bun next dev",
+    "build": "bun --bun next build",
+    "start": "bun --bun next start",
     "lint": "eslint app/ components/ lib/",
     "test": "echo 'No tests configured'",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate": "bun scripts/migrate.mjs",
     "clean": "rm -rf .next out node_modules"
   },
   "dependencies": {
