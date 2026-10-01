@@ -12,7 +12,7 @@
     },
     "apps/cli": {
       "name": "@c0upons/cli",
-      "version": "1.8.3",
+      "version": "1.8.4",
       "bin": {
         "c0upons": "./dist/index.js",
       },
@@ -30,7 +30,7 @@
     },
     "apps/web": {
       "name": "@c0upons/web",
-      "version": "1.8.3",
+      "version": "1.8.4",
       "dependencies": {
         "@anthropic-ai/sdk": "^0.104.1",
         "@profullstack/libsql-pg": "^0.1.4",
