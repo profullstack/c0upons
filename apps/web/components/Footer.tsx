@@ -71,6 +71,11 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-gray-500">
           <p>© {new Date().getFullYear()} c0upons. Community-powered savings.</p>
+          <nav className="webring flex gap-3" aria-label="Profullstack webring">
+            <a href="https://rssamplifier.com/ring/profullstack/previous?from=https%3A%2F%2Fc0upons.com%2F" rel="prev" className="hover:text-white transition-colors">{"<<"}</a>
+            <a href="https://rssamplifier.com/ring/profullstack" className="hover:text-white transition-colors">Profullstack</a>
+            <a href="https://rssamplifier.com/ring/profullstack/next?from=https%3A%2F%2Fc0upons.com%2F" rel="next" className="hover:text-white transition-colors">{">>"}</a>
+          </nav>
           <p>Built with Next.js · Powered by Postgres</p>
         </div>
       </div>
