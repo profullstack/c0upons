@@ -13,7 +13,8 @@ app ever sees the request (cli-tools `dev2/sites.d/c0upons.com.json`, `nginx_loc
 | Updates | follows tsbb GitHub releases on its own (`TSBB_CHECKOUT_DIR`), every 5 minutes |
 | Admin | `anthony` (anthony@profullstack.com), sign in at /bbs/login |
 
-`seed-forums.ts` creates the Slickdeals-style forum tree and the c0upons branding.
+`seed-forums.ts` creates the Slickdeals-style forum tree and the c0upons branding
+(tsbb's `deals` skin, tsbb >= 0.10.0, which matches this site: Geist, slate, flat orange).
 It is idempotent: forums are matched by slug, so re-running only adds what is missing.
 
 ```sh
