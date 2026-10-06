@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-VERSION="1.8.4"
+VERSION="1.9.0"
 BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
 # Website root (for login + share links). Defaults to BASE_URL without /api.
 WEB_URL="${C0UPONS_WEB:-${BASE_URL%/api}}"
@@ -38,6 +38,8 @@ usage() {
   echo "  logout            Forget saved credentials"
   echo "  submit            Submit a coupon (requires login)"
   echo "  bounty            Post a coupon bounty (requires login)"
+  echo "  inbox [N]         What coupons@profullstack.com received and what became of it"
+  echo "                    (needs C0UPONS_INBOUND_SECRET, the server's INBOUND_EMAIL_SECRET)"
   echo "  upgrade           Upgrade to the latest version (alias: update)"
   echo "  remove            Uninstall the CLI (alias: uninstall)"
   echo "  version           Print version"
@@ -452,6 +454,20 @@ cmd_upgrade() {
   echo -e "${GREEN}✓${RESET} Upgraded to ${BOLD}${new_version}${RESET} at ${self}"
 }
 
+cmd_inbox() {
+  require_jq
+  local limit="${1:-25}"
+  if [ -z "${C0UPONS_INBOUND_SECRET:-}" ]; then
+    echo -e "${RED}Error:${RESET} set C0UPONS_INBOUND_SECRET (INBOUND_EMAIL_SECRET on the server)."
+    exit 1
+  fi
+  local body
+  body=$(curl -fsS -H "Authorization: Bearer ${C0UPONS_INBOUND_SECRET}" \
+    "${BASE_URL}/webhooks/email?limit=${limit}") || { echo -e "${RED}Error:${RESET} request failed."; exit 1; }
+  echo "$body" | jq -r '.[] | "\(.received_at)  \(.outcome | . + (" " * (17 - length)))  \(.from_addr // "?")  \(.subject // "")",
+    (select(.outcome == "posted") | .detail | fromjson | .posted[] | "    \(.store)  \(.code // "(no code)")  \(.title)")'
+}
+
 cmd_remove() {
   local self
   self="$(command -v c0upons 2>/dev/null || echo "")"
@@ -482,6 +498,7 @@ case "${1:-help}" in
   logout)             cmd_logout ;;
   submit)             shift; cmd_submit "$@" ;;
   bounty)             shift; cmd_bounty "$@" ;;
+  inbox)              shift; cmd_inbox "$@" ;;
   upgrade|update)     cmd_upgrade ;;
   remove|uninstall)   cmd_remove ;;
   version|--version|-v) echo "c0upons v${VERSION}" ;;

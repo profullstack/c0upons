@@ -101,3 +101,15 @@ CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 CREATE INDEX IF NOT EXISTS idx_blog_posts_status_published ON blog_posts(status, published_at);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_blog_posts_source_id ON blog_posts(source, source_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bounties_public_id ON bounties(public_id);
+
+CREATE TABLE IF NOT EXISTS inbound_emails (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  message_key TEXT NOT NULL UNIQUE,
+  message_id  TEXT,
+  from_addr   TEXT,
+  subject     TEXT,
+  received_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  outcome     TEXT NOT NULL,
+  engine      TEXT,
+  detail      TEXT
+);

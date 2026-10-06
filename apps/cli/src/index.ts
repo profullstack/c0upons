@@ -211,4 +211,44 @@ program
     }
   });
 
+program
+  .command('inbox')
+  .description('What coupons@profullstack.com received and what became of each message (needs C0UPONS_INBOUND_SECRET)')
+  .option('-l, --limit <n>', 'How many, newest first', '25')
+  .option('--json', 'Raw JSON')
+  .action(async (opts: { limit: string; json?: boolean }) => {
+    const secret = process.env.C0UPONS_INBOUND_SECRET;
+    if (!secret) {
+      console.error(chalk.red('Set C0UPONS_INBOUND_SECRET (INBOUND_EMAIL_SECRET on the server).'));
+      process.exit(1);
+    }
+    const res = await fetch(`${BASE_URL}/api/webhooks/email?limit=${encodeURIComponent(opts.limit)}`, {
+      headers: { authorization: `Bearer ${secret}` },
+    });
+    if (!res.ok) {
+      console.error(chalk.red(`Failed: ${res.status} ${res.statusText}`));
+      process.exit(1);
+    }
+    const rows = (await res.json()) as Array<{
+      received_at: string;
+      outcome: string;
+      from_addr: string | null;
+      subject: string | null;
+      detail: string | null;
+    }>;
+    if (opts.json) {
+      console.log(JSON.stringify(rows, null, 2));
+      return;
+    }
+    for (const r of rows) {
+      const colour = r.outcome === 'posted' || r.outcome === 'confirmed' ? chalk.green : r.outcome === 'error' ? chalk.red : chalk.gray;
+      console.log(`${chalk.dim(r.received_at)}  ${colour(r.outcome.padEnd(17))} ${r.from_addr ?? '?'}  ${r.subject ?? ''}`);
+      if (r.outcome === 'posted' && r.detail) {
+        for (const p of (JSON.parse(r.detail).posted ?? []) as Array<{ store: string; code: string | null; title: string }>) {
+          console.log(`    ${chalk.cyan(p.store)} ${p.code ? chalk.bold(p.code) : '(no code)'} ${p.title}`);
+        }
+      }
+    }
+  });
+
 program.parse();
