@@ -44,6 +44,7 @@
  */
 
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import type { BbsCoupon } from './bbs-post.ts';
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { displayName, formatDiscount, upsertStore, upsertCoupon, ensureSyncSchema, type SqlDb } from './nichedb-sync.ts';
@@ -539,6 +540,8 @@ export interface InboundResult {
   message_key: string;
   engine?: Extraction['engine'];
   posted: Array<{ store: string; code: string | null; title: string }>;
+  /** The coupons this message created, with what a forum thread about each needs. */
+  created: BbsCoupon[];
   duplicates: Array<{ store: string; code: string | null }>;
   skipped: Array<{ title: string; reason: string }>;
   clicked: ClickResult[];
@@ -565,7 +568,7 @@ async function log(db: SqlDb, key: string, mail: InboundMail, outcome: Outcome, 
 export async function handleInboundEmail(db: SqlDb, mail: InboundMail, deps: InboundDeps = {}): Promise<InboundResult> {
   await ensureInboundSchema(db);
   const key = messageKey(mail);
-  const result: InboundResult = { ok: true, outcome: 'no-offer', message_key: key, posted: [], duplicates: [], skipped: [], clicked: [] };
+  const result: InboundResult = { ok: true, outcome: 'no-offer', message_key: key, posted: [], created: [], duplicates: [], skipped: [], clicked: [] };
 
   const prior = await db.sql`SELECT outcome FROM inbound_emails WHERE message_key = ${key} LIMIT 1`;
   if (prior.length && prior[0].outcome !== 'error') {
@@ -619,10 +622,11 @@ export async function handleInboundEmail(db: SqlDb, mail: InboundMail, deps: Inb
         website: o.store_website,
         logo_url: site ? `https://www.google.com/s2/favicons?domain=${site}&sz=128` : null,
       });
+      const sourceId = `${key}:${result.posted.length}`;
       await upsertCoupon(db, storeId, {
         store: { name, slug, website: o.store_website, logo_url: null },
         source: SOURCE,
-        source_id: `${key}:${result.posted.length}`,
+        source_id: sourceId,
         code: o.code,
         title: o.title,
         description: o.description,
@@ -635,6 +639,20 @@ export async function handleInboundEmail(db: SqlDb, mail: InboundMail, deps: Inb
         created_at: null,
       });
       result.posted.push({ store: name, code: o.code, title: o.title });
+      // upsertCoupon returns nothing; the row's id is what its page and its thread link to.
+      const row = await db.sql`SELECT id FROM coupons WHERE source = ${SOURCE} AND source_id = ${sourceId} LIMIT 1`;
+      if (row.length) {
+        result.created.push({
+          id: Number(row[0].id),
+          store: displayName(name, slug),
+          storeSlug: slug,
+          title: o.title,
+          code: o.code,
+          description: o.description,
+          discount: formatDiscount(o.discount_type, o.discount_value),
+          expiry_date: o.expiry_date,
+        });
+      }
     }
     result.outcome = result.posted.length ? 'posted' : result.duplicates.length ? 'duplicate' : 'no-offer';
     await log(db, key, mail, result.outcome, extraction.engine, {
