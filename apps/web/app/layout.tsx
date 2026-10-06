@@ -38,9 +38,16 @@ export const metadata: Metadata = {
     description: "Find and share the best coupon codes and deals, updated daily by the community.",
     images: [`${BASE}/opengraph-image`],
   },
+  // The mark as outlines (favicon.svg), PNGs for browsers that want them, and
+  // the iOS home-screen icon. app/favicon.ico is the Next convention for /favicon.ico.
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
     shortcut: "/favicon.svg",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   robots: { index: true, follow: true },
 };

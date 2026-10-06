@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -6,8 +7,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-14">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="text-xl font-black text-orange-500 tracking-tight">
-              c0upons
+            <Link href="/" className="inline-block">
+              <Image src="/logo.svg" alt="c0upons" width={104} height={22} unoptimized className="h-[22px] w-auto" />
             </Link>
             <p className="mt-3 text-sm leading-relaxed">
               Community-powered coupon codes and deals. Save more with codes shared by real people.
