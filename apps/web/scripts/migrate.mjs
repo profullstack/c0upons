@@ -206,6 +206,23 @@ await db.sql`
 `;
 console.log('  sync_state');
 
+// Every message delivered to coupons@profullstack.com and what became of it
+// (lib/inbound-email.ts creates it too, for a database this has not run on).
+await db.sql`
+  CREATE TABLE IF NOT EXISTS inbound_emails (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_key TEXT NOT NULL UNIQUE,
+    message_id  TEXT,
+    from_addr   TEXT,
+    subject     TEXT,
+    received_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    outcome     TEXT NOT NULL,
+    engine      TEXT,
+    detail      TEXT
+  )
+`;
+console.log('  inbound_emails');
+
 // An empty database used to be seeded with four made-up codes here. Real rows
 // now arrive from nichedb.dev's deals collection through /api/sync/nichedb,
 // which the keep-alive schedule calls, so a fresh database fills itself.
