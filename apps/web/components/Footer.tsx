@@ -31,6 +31,7 @@ export default function Footer() {
             <span className="font-semibold text-gray-200 text-xs uppercase tracking-widest">Browse</span>
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/stores" className="hover:text-white transition-colors">All Stores</Link>
+            <a href="/bbs" className="hover:text-white transition-colors">Forums</a>
             <Link href="/search" className="hover:text-white transition-colors">Search</Link>
             <Link href="/submit" className="hover:text-white transition-colors">Submit a Code</Link>
             <Link href="/bounties" className="hover:text-white transition-colors">Bounties</Link>

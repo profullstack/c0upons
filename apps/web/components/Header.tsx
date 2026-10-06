@@ -26,6 +26,10 @@ export default function Header() {
           <Link href="/stores" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Stores
           </Link>
+          {/* A plain <a>: /bbs is the tsbb board nginx serves, not a Next route. */}
+          <a href="/bbs" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+            Forums
+          </a>
           <Link href="/bounties" className="px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
             Bounties
           </Link>
@@ -75,6 +79,9 @@ export default function Header() {
           <Link href="/stores" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Stores
           </Link>
+          <a href="/bbs" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            Forums
+          </a>
           <Link href="/bounties" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setMenuOpen(false)}>
             Bounties
           </Link>
