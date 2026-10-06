@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import SearchBar from './SearchBar';
@@ -12,7 +13,7 @@ export default function Header() {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="text-xl font-black text-orange-500 tracking-tight">c0upons</span>
+          <Image src="/logo.svg" alt="c0upons" width={104} height={22} priority unoptimized className="h-[22px] w-auto" />
         </Link>
 
         <div className="flex-1 hidden sm:block">
