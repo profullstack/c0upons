@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession, COOKIE } from '@/lib/auth';
+import { rememberMember } from '@/lib/members';
 
 const CLIENT_ID = process.env.COINPAY_API_KEY!;
 const CLIENT_SECRET = process.env.COINPAY_CLIENT_SECRET!;
@@ -77,6 +78,11 @@ export async function GET(req: NextRequest) {
   }
 
   if (!did) return fail('Could not resolve DID');
+
+  // Remember the CoinPay name for the forum bridge. Never let it block sign-in.
+  await rememberMember(did, { name: user.name, email: user.email }).catch((error) =>
+    console.error('rememberMember failed:', error),
+  );
 
   const session = await createSession(did);
   const res = NextResponse.redirect(new URL(returnTo, APP_URL));
