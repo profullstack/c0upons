@@ -60,7 +60,7 @@ const SETTINGS: Record<string, unknown> = {
   'board.tagline': 'Hot deals, coupon codes and freebies, shared by the people who found them.',
   'board.description':
     'The c0upons.com community: post hot deals, working promo codes and freebies, ask for a deal, and vote up the best finds.',
-  'board.skin': 'classic',
+  'board.skin': 'deals',
   'board.accent': '#f97316',
   'board.logoUrl': 'https://c0upons.com/logo.svg',
   'board.logoHref': 'https://c0upons.com',
