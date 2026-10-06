@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { getDb } from '@/lib/db';
 import { loadRootEnv } from '@/lib/root-env';
+import { postCouponsToBbs } from '@/lib/bbs-post';
 import {
   MODEL,
   handleInboundEmail,
@@ -97,6 +98,16 @@ export async function POST(req: NextRequest) {
     console.log(
       `inbound email: ${result.outcome} from=${mail.from?.value?.[0]?.address ?? '?'} posted=${result.posted.length}`,
     );
+    // Each new coupon also gets a thread on c0upons.com/bbs. Not awaited: the
+    // board's flood guard spaces posts 16 s apart, and Forward Email should not
+    // wait on that. This server is long-lived (dev2), so the promise finishes.
+    if (result.created.length) {
+      void postCouponsToBbs(getDb(), result.created)
+        .then((posts) => {
+          for (const p of posts) console.log(`bbs post: coupon ${p.coupon_id} -> ${p.forum} ${p.status} ${p.url ?? p.error ?? ''}`);
+        })
+        .catch((err) => console.error('bbs post failed:', err));
+    }
     return NextResponse.json(result);
   } catch (err) {
     console.error('inbound email failed:', err);
