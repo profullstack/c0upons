@@ -50,7 +50,7 @@ const orgSchema = {
   "@type": "Organization",
   name: "c0upons",
   url: BASE,
-  logo: `${BASE}/logo.svg`,
+  logo: `${BASE}/logo.png`,
   description: "Community-powered coupon codes and deals. Find and share the best coupons for your favourite stores.",
   sameAs: ["https://github.com/profullstack/c0upons"],
 };

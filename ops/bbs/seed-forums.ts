@@ -67,6 +67,17 @@ const SETTINGS: Record<string, unknown> = {
   'board.faviconUrl': 'https://c0upons.com/favicon.svg',
   // The tsbb platform pitch on the index is for boards that are about tsbb.
   'board.showPlatform': false,
+  // c0upons.com has no dark mode, so neither does its forum by default.
+  'board.theme': 'light',
+  // The site's own header navigation, with the board's items where Forums sits.
+  'board.navLinks': [
+    'Coupons | https://c0upons.com/',
+    'Stores | https://c0upons.com/stores',
+    '{forums}',
+    'Bounties | https://c0upons.com/bounties',
+    'Blog | https://c0upons.com/blog',
+    'Docs | https://c0upons.com/docs',
+  ].join('\n'),
 };
 
 await migrate(undefined, { quiet: true });

@@ -14,7 +14,7 @@ app ever sees the request (cli-tools `dev2/sites.d/c0upons.com.json`, `nginx_loc
 | Admin | `anthony` (anthony@profullstack.com), sign in at /bbs/login |
 
 `seed-forums.ts` creates the Slickdeals-style forum tree and the c0upons branding
-(tsbb's `deals` skin, tsbb >= 0.10.0, which matches this site: Geist, slate, flat orange).
+(tsbb's `deals` skin, tsbb >= 0.11.0: the store-page look, this site's header nav via `board.navLinks`, light only).
 It is idempotent: forums are matched by slug, so re-running only adds what is missing.
 
 ```sh
