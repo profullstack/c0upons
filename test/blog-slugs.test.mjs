@@ -12,6 +12,9 @@ describe('closestSlug', () => {
   it('maps an old slug to the post of the same store', () => {
     expect(closestSlug('walgreens-coupon-code-workflow', SLUGS)).toBe('walgreens-photo-coupon-code-workflow-2026');
   });
+  it('never crosses stores', () => {
+    expect(closestSlug('shutterfly-promo-codes-2026-checkout-workflow', SLUGS)).toBeNull();
+  });
   it('keeps an existing slug and returns null when no post is close', () => {
     expect(closestSlug('cvs-photo-promo-code-workflow', SLUGS)).toBe('cvs-photo-promo-code-workflow');
     expect(closestSlug('doordash-promo-codes-for-existing-users-2026-workflow', SLUGS)).toBeNull();
