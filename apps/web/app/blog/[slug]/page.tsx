@@ -1,10 +1,11 @@
 export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getDb } from '@/lib/db';
+import { closestSlug } from '@/lib/blog-slugs';
 import { sanitizeBlogHtml } from '@/lib/sanitize-blog-html';
 
 interface Post {
@@ -35,6 +36,16 @@ async function getPost(slug: string): Promise<Post | null> {
   }
 }
 
+async function publishedSlugs(): Promise<string[]> {
+  try {
+    const rows = await getDb().sql`SELECT slug FROM blog_posts WHERE status = 'published'`;
+    return rows.map((r: { slug: string }) => r.slug);
+  } catch (error) {
+    console.error('[blog] failed to list slugs', error);
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
@@ -61,7 +72,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPost(slug);
-  if (!post) notFound();
+  if (!post) {
+    // An old slug goes to the post it meant (308), else the blog index.
+    const meant = closestSlug(slug, await publishedSlugs());
+    if (meant && meant !== slug) permanentRedirect(`/blog/${meant}`);
+    if (/^[a-z0-9-]+$/.test(slug)) permanentRedirect('/blog');
+    notFound();
+  }
   const sanitizedContent = sanitizeBlogHtml(post.content);
 
   return (

@@ -12,6 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     const store = stores[0];
     const coupons = await db.sql`
       SELECT * FROM coupons WHERE store_id = ${store.id}
+        AND (expiry_date IS NULL OR expiry_date = '' OR expiry_date >= date('now'))
       ORDER BY votes DESC, created_at DESC
     `;
     return NextResponse.json({ store, coupons });
