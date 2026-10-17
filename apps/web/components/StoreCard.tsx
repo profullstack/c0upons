@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { logoSrc } from '@/lib/logo';
 import { Store } from '@/lib/types';
 
 interface StoreWithCount extends Store {
@@ -14,7 +15,7 @@ export default function StoreCard({ store }: { store: StoreWithCount }) {
     >
       {store.logo_url ? (
         <Image
-          src={store.logo_url}
+          {...logoSrc(store.logo_url)}
           alt={store.name}
           width={48}
           height={48}

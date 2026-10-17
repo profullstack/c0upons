@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { logoSrc } from '@/lib/logo';
 import CopyButton from './CopyButton';
 import VoteButton from './VoteButton';
 import { Coupon } from '@/lib/types';
@@ -11,7 +12,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       <div className="flex items-center gap-2.5">
         {coupon.store_logo ? (
           <Image
-            src={coupon.store_logo}
+            {...logoSrc(coupon.store_logo)}
             alt={coupon.store_name ?? ''}
             width={32}
             height={32}
