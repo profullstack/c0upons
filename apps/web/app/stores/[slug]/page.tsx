@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import { logoSrc } from '@/lib/logo';
 import CouponCard from '@/components/CouponCard';
 import { getDb } from '@/lib/db';
 import { Coupon, Store } from '@/lib/types';
@@ -69,7 +70,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
     <div className="flex flex-col gap-8">
       <div className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-6">
         {store.logo_url ? (
-          <Image src={store.logo_url} alt={store.name} width={64} height={64} className="rounded object-contain" />
+          <Image {...logoSrc(store.logo_url)} alt={store.name} width={64} height={64} className="rounded object-contain" />
         ) : (
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-2xl font-bold text-gray-400">
             {store.name[0]}
