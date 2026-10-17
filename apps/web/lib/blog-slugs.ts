@@ -20,14 +20,15 @@ const lead = (s: string) => s.split('-')[0];
 
 /**
  * The published slug an old or mistyped one meant: the closest by edit distance
- * within a third of its length; failing that, the only slug sharing the leading
- * store name (doordash-..., shutterfly-..., walgreens-...), else the shortest
- * edit distance among those sharing it. Null when nothing plausible exists.
+ * after the post for the same store (shared leading name: walgreens-...), then
+ * a near-identical typo within a fifth of its length. Null when nothing plausible exists.
  */
 export function closestSlug(slug: string, slugs: Iterable<string>): string | null {
   const all = [...slugs];
   if (all.includes(slug)) return slug;
-  const max = Math.max(3, Math.floor(slug.length / 3));
+  const sameStore = all.filter((s) => lead(s) === lead(slug) && lead(slug).length >= 4);
+  if (sameStore.length) return sameStore.sort((a, b) => editDistance(slug, a) - editDistance(slug, b))[0];
+  const max = Math.max(3, Math.floor(slug.length / 5));
   let best: string | null = null;
   let bestD = max + 1;
   for (const s of all) {
@@ -37,8 +38,5 @@ export function closestSlug(slug: string, slugs: Iterable<string>): string | nul
       bestD = d;
     }
   }
-  if (best) return best;
-  const sameStore = all.filter((s) => lead(s) === lead(slug) && lead(slug).length >= 4);
-  if (!sameStore.length) return null;
-  return sameStore.sort((a, b) => editDistance(slug, a) - editDistance(slug, b))[0];
+  return best;
 }
