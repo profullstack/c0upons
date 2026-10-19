@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PitFooter from "@/components/PitFooter";
 import Script from "next/script";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -94,6 +95,7 @@ export default function RootLayout({
         <Footer />
         <Script data-site="e615d01b-b475-4df6-8d72-c6f60acfcf04" src="https://crawlproof.com/stats.js" strategy="afterInteractive" />
         <Script src="https://crawlproof.com/ad.js" strategy="afterInteractive" />
+        <PitFooter />
       </body>
     </html>
   );
