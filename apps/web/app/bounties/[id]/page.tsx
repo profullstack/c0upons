@@ -137,7 +137,7 @@ export default async function BountyPage({ params }: { params: Promise<{ id: str
         {/* Actions */}
         {bounty.status === 'open' && isCreator && bounty.payment_id && (
           <a
-            href={`${COINPAY_BASE}/pay/${bounty.payment_id}`}
+            href={`${COINPAY_BASE}/${bounty.payment_id.startsWith('cs_') ? 'checkout' : 'pay'}/${bounty.payment_id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors"

@@ -8,6 +8,7 @@ interface Store { id: number; name: string; slug: string; }
 export default function NewBountyPage() {
   const router = useRouter();
   const [did, setDid] = useState<string | null>(null);
+  const [emailOnFile, setEmailOnFile] = useState<string | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,10 +21,11 @@ export default function NewBountyPage() {
     reward_usd: '0.10',
     store_id: '',
     store_name: '',
+    email: '',
   });
 
   useEffect(() => {
-    fetch('/api/auth/me').then(r => r.json()).then(d => setDid(d.did ?? null)).catch(() => {});
+    fetch('/api/auth/me').then(r => r.json()).then(d => { setDid(d.did ?? null); setEmailOnFile(d.email ?? null); }).catch(() => {});
     fetch('/api/stores').then(r => r.json()).then(d => setStores(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
@@ -36,6 +38,7 @@ export default function NewBountyPage() {
     if (isNaN(reward) || reward < 0.10) { setError('Minimum reward is $0.10'); return; }
     if (!form.store_id && !form.store_name.trim()) { setError('Please select or name a store'); return; }
     if (!form.title.trim()) { setError('Title is required'); return; }
+    if (!emailOnFile && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) { setError('Enter your email for the payment receipt'); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/bounties', {
@@ -48,6 +51,7 @@ export default function NewBountyPage() {
           reward_usd: reward,
           store_id: form.store_id ? parseInt(form.store_id) : null,
           store_name: !form.store_id ? form.store_name.trim() : null,
+          email: emailOnFile ? undefined : form.email.trim(),
         }),
       });
       const data = await res.json();
@@ -161,8 +165,18 @@ export default function NewBountyPage() {
                 required
               />
             </div>
+            {!emailOnFile && (
+              <input
+                type="email"
+                placeholder="Your email (for the payment receipt) *"
+                value={form.email}
+                onChange={e => set('email', e.target.value)}
+                className="mt-3 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                required
+              />
+            )}
             <p className="text-xs text-gray-400 mt-1">
-              You will be redirected to CoinPay to fund this bounty. The reward is held until a valid coupon is submitted.
+              You will be redirected to CoinPay to fund this bounty with any supported coin or PayPal. The reward is held until a valid coupon is submitted.
             </p>
           </div>
         </div>

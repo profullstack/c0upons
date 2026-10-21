@@ -1,40 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCoinPayWebhook } from '@profullstack/stack/coinpay';
+import { verifyAndReadCoinPayWebhook } from '@profullstack/stack/coinpay';
 
 const SECRET = process.env.COINPAY_WEBHOOK_SECRET!;
 
 export async function POST(req: NextRequest) {
   const raw = await req.text();
-  const sigHeader = req.headers.get('x-coinpay-signature');
-
-  if (!verifyCoinPayWebhook({ signature: sigHeader, rawBody: raw, secret: SECRET })) {
-    console.error('CoinPay webhook: invalid signature');
+  const hook = verifyAndReadCoinPayWebhook({
+    signature: req.headers.get('x-coinpay-signature'),
+    rawBody: raw,
+    secret: SECRET,
+  });
+  if (!hook) {
+    console.error('CoinPay webhook: invalid signature or payload');
     return NextResponse.json({ error: 'invalid signature' }, { status: 401 });
   }
 
-  const event = JSON.parse(raw);
-  console.log('CoinPay webhook:', event.type, event.id);
+  console.log('CoinPay webhook:', hook.type, hook.paymentId, hook.checkoutSessionId ?? '-');
 
-  switch (event.type) {
-    case 'test.webhook':
-      break;
-    case 'payment.completed':
-    case 'payment.confirmed': {
-      const meta = event.data?.metadata ?? event.metadata ?? {};
-      if (meta.type === 'bounty_fund' && meta.bounty_id) {
-        const db = (await import('@/lib/db')).getDb();
-        await db.sql`
-          UPDATE bounties
-          SET status = 'funded', payment_id = ${event.data?.payment_id ?? event.id},
-              updated_at = ${new Date().toISOString()}
-          WHERE public_id = ${meta.bounty_id} AND status = 'open'
-        `;
-        console.log('Bounty funded:', meta.bounty_id);
-      }
-      break;
+  if (hook.paid) {
+    const meta = hook.metadata;
+    const bountyId = typeof meta.bounty_id === 'string' ? meta.bounty_id : null;
+    if (meta.type === 'bounty_fund' && bountyId) {
+      const db = (await import('@/lib/db')).getDb();
+      await db.sql`
+        UPDATE bounties
+        SET status = 'funded', payment_id = ${hook.paymentId ?? hook.checkoutSessionId},
+            updated_at = ${new Date().toISOString()}
+        WHERE public_id = ${bountyId} AND status = 'open'
+      `;
+      console.log('Bounty funded:', bountyId, hook.rail);
     }
-    case 'payment.failed':
-      break;
   }
 
   return NextResponse.json({ received: true });

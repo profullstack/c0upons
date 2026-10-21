@@ -4,10 +4,12 @@ import { getDb } from '@/lib/db';
 import { dbErrorResponse } from '@/lib/api-error';
 import { getSessionDid } from '@/lib/auth';
 import { generatePublicId } from '@/lib/id';
+import { memberByDid } from '@/lib/members';
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const COINPAY_BASE = 'https://coinpayportal.com';
 const API_KEY = process.env.COINPAY_API_KEY!;
-const MERCHANT_ID = process.env.COINPAY_MERCHANT_ID!;
 const APP_URL = process.env.NEXT_PUBLIC_BASE_URL!;
 
 export async function GET() {
@@ -32,12 +34,23 @@ export async function POST(req: NextRequest) {
   const did = await getSessionDid();
   if (!did) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 
-  const { title, description, url, reward_usd, store_id, store_name } = await req.json();
+  const { title, description, url, reward_usd, store_id, store_name, email: bodyEmail } = await req.json();
 
   if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   const reward = parseFloat(reward_usd);
   if (isNaN(reward) || reward < 0.10) return NextResponse.json({ error: 'Minimum reward is $0.10' }, { status: 400 });
   if (!store_id && !store_name?.trim()) return NextResponse.json({ error: 'Store is required' }, { status: 400 });
+
+  // CoinPay checkout sessions need the payer's email: the one on file from
+  // the CoinPay login, else the one typed on the form.
+  let email = '';
+  try {
+    email = (await memberByDid(did))?.email?.trim().toLowerCase() ?? '';
+  } catch { /* members table unavailable: fall back to the form */ }
+  if (!email && typeof bodyEmail === 'string') email = bodyEmail.trim().toLowerCase();
+  if (!EMAIL.test(email) || email.length > 320) {
+    return NextResponse.json({ error: 'A valid email is required to fund the bounty' }, { status: 400 });
+  }
 
   try {
     const db = getDb();
@@ -59,36 +72,36 @@ export async function POST(req: NextRequest) {
       )
     `;
 
-    // Create a CoinPay payment for the creator to fund the bounty
-    // Docs: POST /api/payments/create
-    let paymentAddress: string | null = null;
-    let paymentId: string | null = null;
+    // Hosted CoinPay checkout session: the creator funds the bounty with any
+    // coin the business has a wallet for, or PayPal. payment_id holds the
+    // cs_ session id until the webhook replaces it with the paid payment id.
+    let payUrl: string | null = null;
+    let sessionId: string | null = null;
 
     try {
       const coinpay = createCoinPayClient({ apiKey: API_KEY, baseUrl: COINPAY_BASE });
       const checkout = await coinpay.createCheckout({
         amountUsd: reward,
-        currency: 'usdc_pol',   // default to USDC on Polygon — low fees
-        // Keep the API's implicit default ('crypto'); 'both' would require Stripe Connect.
-        paymentMethod: 'crypto',
-        description: `Coupon bounty: ${title.trim()}`,
-        redirectUrl: `${APP_URL}/bounties/${publicId}?funded=1`,
+        customerEmail: email,
+        accountId: did,
+        property: 'c0upons.com',
+        description: `Coupon bounty: ${title.trim()}`.slice(0, 500),
+        successUrl: `${APP_URL}/bounties/${publicId}?funded=1`,
+        cancelUrl: `${APP_URL}/bounties/${publicId}`,
         metadata: { type: 'bounty_fund', bounty_id: publicId, creator_did: did },
-        businessId: MERCHANT_ID,
       });
-      paymentId = checkout.paymentId;
-      paymentAddress = checkout.payment.payment_address ?? null;
-      await db.sql`UPDATE bounties SET payment_id = ${paymentId} WHERE public_id = ${publicId}`;
+      sessionId = checkout.sessionId;
+      payUrl = checkout.checkoutUrl;
+      await db.sql`UPDATE bounties SET payment_id = ${sessionId} WHERE public_id = ${publicId}`;
     } catch (e) {
-      console.error('CoinPay payment create failed:', e);
+      console.error('CoinPay checkout session create failed:', e);
     }
 
     return NextResponse.json({
       id: publicId,
       public_id: publicId,
-      payment_id: paymentId,
-      payment_address: paymentAddress,
-      pay_url: paymentId ? `${COINPAY_BASE}/pay/${paymentId}` : null,
+      checkout_session_id: sessionId,
+      pay_url: payUrl,
     }, { status: 201 });
   } catch (e) {
     console.error('Failed to create bounty:', e);
