@@ -2,7 +2,7 @@
  * Every blog page carries one CrawlProof unit at the top of the post,
  * above the content (never at the bottom, against the footer): the text strip,
  * filled by the ad.js loader the root layout already includes. It collapses
- * to nothing when there is no advertiser. Same slot as components/AdUnit.
+ * to nothing when there is no advertiser. The home page carries no ad.
  */
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return (
