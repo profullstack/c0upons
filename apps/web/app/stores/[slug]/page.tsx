@@ -16,9 +16,12 @@ const getStore = cache(async (slug: string): Promise<{ store: Store; coupons: Co
     const stores = await db.sql`SELECT * FROM stores WHERE slug = ${slug}`;
     if (!stores.length) return null;
     const store = stores[0];
+    // expiry_date is TEXT 'YYYY-MM-DD'; compare against a bound string, not date('now')
+    // (Postgres has no text >= date operator).
+    const today = new Date().toISOString().slice(0, 10);
     const coupons = await db.sql`
       SELECT * FROM coupons WHERE store_id = ${store.id}
-        AND (expiry_date IS NULL OR expiry_date = '' OR expiry_date >= date('now'))
+        AND (expiry_date IS NULL OR expiry_date = '' OR expiry_date >= ${today})
       ORDER BY votes DESC, created_at DESC
     `;
     return { store, coupons };
