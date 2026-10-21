@@ -10,9 +10,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     if (!stores.length) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const store = stores[0];
+    // expiry_date is TEXT 'YYYY-MM-DD'; compare against a bound string, not date('now')
+    // (Postgres has no text >= date operator).
+    const today = new Date().toISOString().slice(0, 10);
     const coupons = await db.sql`
       SELECT * FROM coupons WHERE store_id = ${store.id}
-        AND (expiry_date IS NULL OR expiry_date = '' OR expiry_date >= date('now'))
+        AND (expiry_date IS NULL OR expiry_date = '' OR expiry_date >= ${today})
       ORDER BY votes DESC, created_at DESC
     `;
     return NextResponse.json({ store, coupons });
