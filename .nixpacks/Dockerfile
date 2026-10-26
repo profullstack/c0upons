@@ -11,7 +11,7 @@
 # inside the container, answers / for the deploy health check, reads its secrets
 # from app.env at run time. NEXT_PUBLIC_BASE_URL arrives as a compose build arg.
 
-FROM oven/bun:1.4.0-slim AS deps
+FROM oven/bun:1.4.4-slim AS deps
 WORKDIR /app
 # The whole workspace manifest set: bun installs per-package trees.
 COPY package.json bun.lock ./
@@ -27,7 +27,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 TURBO_TELEMETRY_DISABLED=1
 # turbo -> `bun --bun next build` in apps/web: Next builds on Bun, not Node.
 RUN bun run build:web
 
-FROM oven/bun:1.4.0-slim AS runtime
+FROM oven/bun:1.4.4-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
