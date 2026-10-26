@@ -3,7 +3,7 @@
   "version": "1.9.3",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.4.0",
+  "packageManager": "bun@1.4.4",
   "scripts": {
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=@c0upons/web",
@@ -19,9 +19,9 @@
     "setup:hooks": "git config core.hooksPath .githooks && echo 'Git hooks configured'"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "turbo": "^2.3.0",
-    "typescript": "^5.7.0"
+    "@types/node": "^26.6.5",
+    "turbo": "^2.11.10",
+    "typescript": "^7.0.2"
   },
   "repository": {
     "type": "git",
@@ -29,5 +29,13 @@
   },
   "author": "Profullstack, Inc.",
   "license": "MIT",
-  "workspaces": ["apps/*"]
+  "workspaces": [
+    "apps/*"
+  ],
+  "overrides": {
+    "js-yaml": "^4.3.2",
+    "browserslist": "^4.29.4",
+    "zod": "^4.6.7",
+    "baseline-browser-mapping": "^2.11.33"
+  }
 }
