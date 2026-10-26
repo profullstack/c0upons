@@ -26,8 +26,6 @@ export const SERVER: McpServerInfo = {
     'reveal_pending reads a few code-less pages.',
 };
 
-const couponFields = 'c.id, c.code, c.title, c.description, c.discount, c.discount_type, c.discount_value, c.expiry_date, c.url, c.votes, c.verified, c.code_checked_at';
-
 export const TOOLS: McpTool[] = [
   {
     name: 'search_coupons',
@@ -37,7 +35,7 @@ export const TOOLS: McpTool[] = [
       const pattern = `%${String(q).trim()}%`;
       const db = getDb();
       const rows = await db.sql`
-        SELECT ${couponFields}, s.name AS store_name, s.slug AS store_slug
+        SELECT c.id, c.code, c.title, c.description, c.discount, c.discount_type, c.discount_value, c.expiry_date, c.url, c.votes, c.verified, c.code_checked_at, s.name AS store_name, s.slug AS store_slug
         FROM coupons c JOIN stores s ON s.id = c.store_id
         WHERE c.title LIKE ${pattern} OR c.description LIKE ${pattern} OR s.name LIKE ${pattern} OR c.code LIKE ${pattern}
         ORDER BY c.votes DESC LIMIT 50
@@ -52,7 +50,7 @@ export const TOOLS: McpTool[] = [
     async run({ limit }) {
       const n = Math.min(100, Math.max(1, Number(limit) || 20));
       const rows = await getDb().sql`
-        SELECT ${couponFields}, s.name AS store_name, s.slug AS store_slug
+        SELECT c.id, c.code, c.title, c.description, c.discount, c.discount_type, c.discount_value, c.expiry_date, c.url, c.votes, c.verified, c.code_checked_at, s.name AS store_name, s.slug AS store_slug
         FROM coupons c JOIN stores s ON s.id = c.store_id
         ORDER BY c.votes DESC, c.created_at DESC LIMIT ${n}
       `;
@@ -81,7 +79,7 @@ export const TOOLS: McpTool[] = [
       const stores = await db.sql`SELECT id, name, slug, website FROM stores WHERE slug = ${String(slug)}`;
       if (!stores.length) throw new Error(`No store with slug "${String(slug)}"`);
       const coupons = await db.sql`
-        SELECT ${couponFields} FROM coupons c WHERE c.store_id = ${stores[0].id}
+        SELECT c.id, c.code, c.title, c.description, c.discount, c.discount_type, c.discount_value, c.expiry_date, c.url, c.votes, c.verified, c.code_checked_at FROM coupons c WHERE c.store_id = ${stores[0].id}
         ORDER BY c.votes DESC, c.created_at DESC
       `;
       return { store: stores[0], count: coupons.length, coupons };
@@ -93,7 +91,7 @@ export const TOOLS: McpTool[] = [
     inputSchema: { type: 'object', properties: { id: { type: 'integer' } }, required: ['id'], additionalProperties: false },
     async run({ id }) {
       const rows = await getDb().sql`
-        SELECT ${couponFields}, c.code_source, s.name AS store_name, s.slug AS store_slug, s.website AS store_website
+        SELECT c.id, c.code, c.title, c.description, c.discount, c.discount_type, c.discount_value, c.expiry_date, c.url, c.votes, c.verified, c.code_checked_at, c.code_source, s.name AS store_name, s.slug AS store_slug, s.website AS store_website
         FROM coupons c JOIN stores s ON s.id = c.store_id WHERE c.id = ${Number(id)}
       `;
       if (!rows.length) throw new Error(`No coupon ${String(id)}`);
