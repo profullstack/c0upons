@@ -395,6 +395,20 @@ export default function DocsPage() {
             example="curl -X POST https://c0upons.com/api/sync/grocery"
             response={`{ "ok": true, "skipped": false, "listed": 212, "remaining": 209, "pruned": 0, "written": 331, "flyers": [{ "id": 8141217, "store": "Raley's", "postal_code": "95814", "items": 123, "written": 123 }] }`}
           />
+          <Endpoint
+            method="POST"
+            path="/api/sync/peerpush"
+            desc="Read peerpush.com/deals (discount codes software founders attach to their PeerPush listings) into stores and coupons, and remove deals past their valid-until date. The server's scraper daemon runs this daily; throttled to one run per hour."
+            example="curl -X POST https://c0upons.com/api/sync/peerpush"
+            response={`{ "ok": true, "skipped": false, "pages": 4, "deals": 127, "inserted": 127, "updated": 0, "declined": 0, "pruned": 0, "stores": 127, "added": ["Kliport: 50% OFF"] }`}
+          />
+          <Endpoint
+            method="GET"
+            path="/api/v1/daemon"
+            desc="What the scraper daemon (@profullstack/scraper-daemon) is doing: its jobs, the last run of each, failures and the next run."
+            example="curl https://c0upons.com/api/v1/daemon"
+            response={`{ "name": "c0upons", "engine": "bullmq", "running": true, "tasks": [{ "name": "peerpush", "every": 86400000, "ok": 1, "failed": 0, "lastError": null }] }`}
+          />
         </section>
 
         {/* MCP */}
@@ -423,6 +437,7 @@ curl -X POST https://c0upons.com/mcp -H 'content-type: application/json' \\
               ['sync_deals', 'Pull the next deals from nichedb.dev.'],
               ['sync_reddit', 'Read the newest r/couponcodes posts.'],
               ['sync_grocery', 'Read the next grocery weekly ads.'],
+              ['sync_peerpush', 'Read the PeerPush deals board.'],
               ['reveal_pending', 'Read the pages of up to three code-less coupons.'],
             ].map(([name, desc]) => (
               <div key={name} className="border border-gray-200 rounded-lg px-4 py-3">

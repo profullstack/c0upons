@@ -158,6 +158,16 @@ program
       } catch {
         grocery.fail('Failed to reach c0upons.');
       }
+      const peerpush = ora('Reading the PeerPush deals board...').start();
+      try {
+        const res = await fetch(`${BASE_URL}/api/sync/peerpush`, { method: 'POST' });
+        const data = (await res.json()) as { error?: string; skipped?: boolean; deals?: number; inserted?: number; updated?: number; pruned?: number };
+        if (!res.ok) peerpush.fail(String(data.error ?? res.statusText));
+        else if (data.skipped) peerpush.info(chalk.gray('Read recently; skipped.'));
+        else peerpush.succeed(`${String(data.inserted)} new, ${String(data.updated)} updated of ${String(data.deals)} deals, ${String(data.pruned)} expired removed`);
+      } catch {
+        peerpush.fail('Failed to reach c0upons.');
+      }
     }
     if (!opts.syncOnly) {
       const spinner = ora('Reading deal pages for coupons without a code...').start();

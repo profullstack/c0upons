@@ -276,8 +276,8 @@ export function parseDiscount(
 ): { type: 'percent' | 'fixed' | null; value: number | null } {
   for (const text of texts) {
     if (!text) continue;
-    const pct = /(\d{1,2}(?:\.\d+)?)\s*%\s*off/i.exec(text);
-    if (pct) return { type: 'percent', value: Number(pct[1]) };
+    const pct = /(?<![\d.])(\d{1,3}(?:\.\d+)?)\s*%\s*off/i.exec(text);
+    if (pct && Number(pct[1]) <= 100) return { type: 'percent', value: Number(pct[1]) };
     const usd = /\$\s?(\d+(?:\.\d+)?)\s*off/i.exec(text);
     if (usd) return { type: 'fixed', value: Number(usd[1]) };
   }

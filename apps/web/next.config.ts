@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   // The database drivers stay out of the server bundle: pg (under
   // @profullstack/libsql-pg) and, for local file: databases, the native libSQL client.
-  serverExternalPackages: ['@profullstack/libsql-pg', 'pg', '@libsql/client'],
+  serverExternalPackages: ['@profullstack/libsql-pg', 'pg', '@libsql/client', '@profullstack/scraper-daemon', 'bullmq', 'ioredis'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
