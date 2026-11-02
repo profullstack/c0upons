@@ -6,6 +6,7 @@ import type { McpTool, McpServerInfo } from './mcp-protocol';
 import { syncNichedbDeals } from './nichedb-sync';
 import { syncRedditCouponcodes } from './reddit-sync';
 import { syncFlippWeeklyAds } from './flipp-sync';
+import { syncPeerpushDeals } from './peerpush-sync';
 import { RECHECK_HOURS, ensureRevealColumns, revealDeps, revealForCoupon, sweepReveals } from './reveal-coupon';
 
 /**
@@ -23,6 +24,7 @@ export const SERVER: McpServerInfo = {
     'get_coupon for one, and reveal_code when a coupon has no code: a real browser reads its deal page and clicks what a ' +
     'shopper would (up to a minute). sync_deals pulls new deals in, sync_reddit reads the newest r/couponcodes posts, ' +
     'sync_grocery reads the next grocery weekly ads (Raley\'s, Safeway, Walmart and the rest), and ' +
+    'sync_peerpush reads the PeerPush founders\' deals board, and ' +
     'reveal_pending reads a few code-less pages.',
 };
 
@@ -148,6 +150,15 @@ export const TOOLS: McpTool[] = [
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     async run() {
       return syncFlippWeeklyAds(getDb());
+    },
+  },
+  {
+    name: 'sync_peerpush',
+    description:
+      "Read peerpush.com/deals (discount codes software founders attach to their PeerPush listings) into stores and coupons, and remove deals past their valid-until date. The site's scraper daemon runs this daily; throttled to one run per hour.",
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    async run() {
+      return syncPeerpushDeals(getDb());
     },
   },
   {
