@@ -29,6 +29,48 @@ async function getTrendingCoupons(): Promise<Coupon[]> {
   }
 }
 
+/**
+ * The newest coupons, so a deal is on the homepage the hour it lands instead of
+ * waiting for votes. Grocery weekly-ad prices (source 'flipp') are left out:
+ * they arrive by the hundreds every few minutes and would be all this showed.
+ */
+async function getJustAdded(): Promise<Coupon[]> {
+  try {
+    const db = getDb();
+    const today = new Date().toISOString().slice(0, 10);
+    return await db.sql`
+      SELECT c.*, s.name AS store_name, s.slug AS store_slug, s.logo_url AS store_logo
+      FROM coupons c
+      JOIN stores s ON s.id = c.store_id
+      WHERE (c.source IS NULL OR c.source <> 'flipp')
+        AND (c.expiry_date IS NULL OR c.expiry_date = '' OR c.expiry_date >= ${today})
+      ORDER BY c.id DESC
+      LIMIT 8
+    `;
+  } catch {
+    return [];
+  }
+}
+
+/** Codes software founders list on PeerPush (lib/peerpush-sync.ts, read daily), newest deal first. */
+async function getPeerpushDeals(): Promise<Coupon[]> {
+  try {
+    const db = getDb();
+    const today = new Date().toISOString().slice(0, 10);
+    return await db.sql`
+      SELECT c.*, s.name AS store_name, s.slug AS store_slug, s.logo_url AS store_logo
+      FROM coupons c
+      JOIN stores s ON s.id = c.store_id
+      WHERE c.source = 'peerpush'
+        AND (c.expiry_date IS NULL OR c.expiry_date = '' OR c.expiry_date >= ${today})
+      ORDER BY c.created_at DESC, c.id DESC
+      LIMIT 8
+    `;
+  } catch {
+    return [];
+  }
+}
+
 async function getTopStores(): Promise<StoreWithCount[]> {
   try {
     const db = getDb();
@@ -116,8 +158,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [coupons, stores, stats] = await Promise.all([
+  const [coupons, justAdded, peerpush, stores, stats] = await Promise.all([
     getTrendingCoupons(),
+    getJustAdded(),
+    getPeerpushDeals(),
     getTopStores(),
     getStats(),
   ]);
@@ -189,6 +233,49 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Just added */}
+      {justAdded.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Just Added</h2>
+              <p className="text-sm text-gray-500 mt-0.5">The newest codes, before anyone has voted on them</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {justAdded.map((c) => (
+              <CouponCard key={c.id} coupon={c} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Software deals from PeerPush */}
+      {peerpush.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Software Deals</h2>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Codes founders list on{' '}
+                <a href="https://peerpush.com/deals" className="hover:underline" rel="noopener">
+                  PeerPush
+                </a>
+                , refreshed daily
+              </p>
+            </div>
+            <Link href="/search?q=PeerPush" className="text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors">
+              View all →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {peerpush.map((c) => (
+              <CouponCard key={c.id} coupon={c} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Top Stores */}
       <section>
