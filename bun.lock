@@ -33,6 +33,7 @@
       "version": "1.10.1",
       "dependencies": {
         "@anthropic-ai/sdk": "^1.3.0",
+        "@profullstack/ai-providers": "0.2.0",
         "@profullstack/bridges": "^0.2.0",
         "@profullstack/footer": "latest",
         "@profullstack/libsql-pg": "^0.1.4",
@@ -347,6 +348,8 @@
     "@posthog/core": ["@posthog/core@1.60.1", "", { "dependencies": { "@posthog/types": "^1.416.0" } }, "sha512-UpswaG2957O6Ywfx1aCeI8BbXcfoKduKwq1ytBml80AQuAmgK672OmhDcldA7wg4vGP49LpDTgxcNbLvZwQOqw=="],
 
     "@posthog/types": ["@posthog/types@1.416.1", "", {}, "sha512-PG06HE2axHNyyZ9CKSSHKSW4pWfQwEtPA1dewFqIwggcIgk1BsQ+tHSNqvZz+IvE2WnBZ8OcOkF9SWI55VxQfA=="],
+
+    "@profullstack/ai-providers": ["@profullstack/ai-providers@0.2.0", "", { "bin": { "ai-providers": "src/cli.js" } }, "sha512-xY7a4gHThur7uTUnmzft47TnqVK+NVA57K60LThSAeHhITbSNLhkt9Sp7uNKCSg0wC55b5wLFEFGsGzblCiT6Q=="],
 
     "@profullstack/bridges": ["@profullstack/bridges@0.2.0", "", { "bin": { "bridges": "bin/bridges.js" } }, "sha512-ai74Zl1mQN2WZDVb93qiwfpqjCDCg/TZkxgFHFn4Rb/Cxdgg2kUst9ep0B609WoulnNjsXN3IU4IMhpzmypg7w=="],
 

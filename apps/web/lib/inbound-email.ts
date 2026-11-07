@@ -15,8 +15,8 @@
  *
  * WHAT GETS POSTED
  *
- * Offers come from the model (claude-haiku-4-5, structured output) when the
- * deployment has a key and the model is not refusing; otherwise from the
+ * Offers come from the model (c0mpute peer nodes first, then Anthropic
+ * claude-haiku-4-5 or OpenAI as paid fallbacks) when one answers; otherwise from the
  * same rules the Reddit source uses (`extractCode`, `parseDiscount`). Either
  * way an offer is kept only when it is usable: its code is a plausible code
  * that appears verbatim in the mail (a model never gets to invent one), or it
@@ -51,6 +51,7 @@ import { displayName, formatDiscount, upsertStore, upsertCoupon, ensureSyncSchem
 import { extractCode, isPlausibleCode, parseDiscount, slugify } from './reddit-sync.ts';
 
 export const SOURCE = 'email';
+/** The Anthropic model on the paid fallback path. */
 export const MODEL = 'claude-haiku-4-5';
 export const ADDRESS = 'coupons@profullstack.com';
 const USER_AGENT =

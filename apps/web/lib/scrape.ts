@@ -1,5 +1,5 @@
 import 'server-only';
-import Anthropic from '@anthropic-ai/sdk';
+import { generateObject } from '@profullstack/ai-providers';
 import { loadRootEnv } from './root-env';
 
 export interface ScrapedListing {
@@ -10,8 +10,6 @@ export interface ScrapedListing {
   image_url: string | null;
   category: string | null;
 }
-
-const MODEL = 'claude-opus-4-8';
 
 // JSON Schema the model is constrained to. Every field is nullable so the model
 // can leave anything it can't determine as null instead of hallucinating.
@@ -47,16 +45,25 @@ const SCHEMA = {
   additionalProperties: false,
 } as const;
 
-let client: Anthropic | null = null;
+/**
+ * Peer nodes on c0mpute write about two tokens a second; a 1k-token answer can
+ * take a few minutes. The route's maxDuration allows for it.
+ */
+export const SCRAPE_TIMEOUT_MS = Number(process.env.C0MPUTE_TIMEOUT_MS) || 170_000;
 
-function getClient(): Anthropic {
-  if (!client) {
-    loadRootEnv();
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set');
-    client = new Anthropic({ apiKey });
+const FIELDS = SCHEMA.required;
+
+/** Every field present (string or null), nothing else. Throws so the router repairs. */
+export function parseListing(raw: unknown): ScrapedListing {
+  if (!raw || typeof raw !== 'object') throw new Error('not an object');
+  const o = raw as Record<string, unknown>;
+  const out = {} as Record<string, string | null>;
+  for (const f of FIELDS) {
+    const v = o[f];
+    if (v !== null && v !== undefined && typeof v !== 'string') throw new Error(`${f} is not a string`);
+    out[f] = typeof v === 'string' && v.trim() ? v : null;
   }
-  return client;
+  return out as unknown as ScrapedListing;
 }
 
 /** Fetch a page and reduce it to a compact, model-friendly text blob. */
@@ -87,32 +94,29 @@ async function fetchPageText(url: string): Promise<string> {
 }
 
 /**
- * Scrape product/deal metadata from a listing URL using Claude.
- * Throws on fetch or API failure so callers can surface a useful error.
+ * Scrape product/deal metadata from a listing URL with a model: c0mpute first
+ * (@profullstack/ai-providers), Anthropic/OpenAI as paid fallbacks.
+ * Throws on fetch or model failure so callers can surface a useful error.
  */
 export async function scrapeListing(url: string): Promise<ScrapedListing> {
+  loadRootEnv();
   const pageText = await fetchPageText(url);
 
-  const response = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: 1024,
-    output_config: { format: { type: 'json_schema', schema: SCHEMA } },
-    messages: [
-      {
-        role: 'user',
-        content:
-          `Extract structured coupon-listing metadata from this web page. ` +
-          `The page is at the URL: ${url}\n\n` +
-          `Use Open Graph / meta tags and the page title when available. ` +
-          `For store_website, return only the scheme and host of the page URL. ` +
-          `Make image_url an absolute URL. Leave any field null if you cannot determine it.\n\n` +
-          `PAGE CONTENT:\n${pageText}`,
-      },
-    ],
+  const { object } = await generateObject({
+    feature: 'c0upons.scrape',
+    name: 'Listing',
+    maxTokens: 1024,
+    temperature: 0,
+    timeoutMs: SCRAPE_TIMEOUT_MS,
+    jsonSchema: SCHEMA as unknown as Record<string, unknown>,
+    schema: parseListing,
+    user:
+      `Extract structured coupon-listing metadata from this web page. ` +
+      `The page is at the URL: ${url}\n\n` +
+      `Use Open Graph / meta tags and the page title when available. ` +
+      `For store_website, return only the scheme and host of the page URL. ` +
+      `Make image_url an absolute URL. Leave any field null if you cannot determine it.\n\n` +
+      `PAGE CONTENT:\n${pageText}`,
   });
-
-  const text = response.content.find((b) => b.type === 'text');
-  if (!text || text.type !== 'text') throw new Error('No content returned from model');
-
-  return JSON.parse(text.text) as ScrapedListing;
+  return object;
 }

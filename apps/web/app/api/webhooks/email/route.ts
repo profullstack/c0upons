@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { generateObject } from '@profullstack/ai-providers';
 import { getDb } from '@/lib/db';
 import { loadRootEnv } from '@/lib/root-env';
 import { postCouponsToBbs } from '@/lib/bbs-post';
@@ -45,38 +45,29 @@ function keyOk(req: NextRequest): boolean {
   return candidates.some((c) => c && safeEqual(c, secret));
 }
 
-let anthropic: Anthropic | null = null;
-let modelBlockedUntil = 0;
+/**
+ * Offers model: c0mpute first (@profullstack/ai-providers), Anthropic/OpenAI
+ * as paid fallbacks; the router parks a provider that is out of credit. Any
+ * failure falls back to the rules in extractOffers.
+ *
+ * Kept under the route's maxDuration so Forward Email gets its answer (and
+ * does not retry) even when every peer node is slow: then the rules decide.
+ */
+const EMAIL_MODEL_TIMEOUT_MS = 90_000;
 
-function jsonModel(): JsonModel | null {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key || Date.now() < modelBlockedUntil) return null;
-  anthropic ??= new Anthropic({ apiKey: key, timeout: 60_000 });
-  const client = anthropic;
-  return async (prompt, schema) => {
-    try {
-      const res = await client.messages.create({
-        model: MODEL,
-        max_tokens: 2048,
-        output_config: { format: { type: 'json_schema', schema: schema as Record<string, unknown> } },
-        messages: [{ role: 'user', content: prompt }],
-      });
-      const text = res.content.find((b) => b.type === 'text');
-      if (!text || text.type !== 'text') throw new Error('model returned no text');
-      return JSON.parse(text.text);
-    } catch (err) {
-      // Usage cap, rate limit or a dead key: use the rules for an hour.
-      if (
-        err instanceof Anthropic.RateLimitError ||
-        err instanceof Anthropic.AuthenticationError ||
-        (err instanceof Anthropic.BadRequestError && /usage limits|credit/i.test(err.message))
-      ) {
-        modelBlockedUntil = Date.now() + 60 * 60_000;
-      }
-      throw err;
-    }
-  };
-}
+const jsonModel: JsonModel = async (prompt, schema) => {
+  const { object } = await generateObject({
+    feature: 'c0upons.inbound-email',
+    name: 'Offers',
+    maxTokens: 2048,
+    temperature: 0,
+    timeoutMs: EMAIL_MODEL_TIMEOUT_MS,
+    models: { anthropic: MODEL },
+    jsonSchema: schema as Record<string, unknown>,
+    user: prompt,
+  });
+  return object;
+};
 
 export async function POST(req: NextRequest) {
   const raw = await req.text();
@@ -94,7 +85,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await handleInboundEmail(getDb(), mail, { model: jsonModel() });
+    const result = await handleInboundEmail(getDb(), mail, { model: jsonModel });
     console.log(
       `inbound email: ${result.outcome} from=${mail.from?.value?.[0]?.address ?? '?'} posted=${result.posted.length}`,
     );

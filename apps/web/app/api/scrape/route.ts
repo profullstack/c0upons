@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scrapeListing } from '@/lib/scrape';
 
-// Scraping fetches an external page and calls Claude — give it room.
-export const maxDuration = 60;
+// Scraping fetches an external page and calls a model (c0mpute peer nodes
+// first, ~2 tokens/s) — give it room.
+export const maxDuration = 180;
 
 export async function POST(req: NextRequest) {
   let url: string;
