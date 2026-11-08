@@ -44,5 +44,5 @@ test('the shipped CLI reports the repo version', () => {
 // somewhere else would strand every installed copy on its current version.
 test('the shipped CLI upgrades from the canonical URL', () => {
   const script = readFileSync(new URL('../apps/web/public/cli/c0upons', import.meta.url), 'utf8');
-  assert.match(script, /https:\/\/c0upons\.com\/cli\/c0upons/);
+  assert.match(script, /https:\/\/c0upons\.pwa\.pit\.world\/cli\/c0upons/);
 });
