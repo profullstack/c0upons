@@ -21,7 +21,7 @@
  *
  * A post is a listing when it carries a code or links out to the store; a
  * post that asks for a code, or only talks, is conversation and is skipped.
- * A post that links back to c0upons.com is our own coupon coming round again
+ * A post that links back to us (or the retired c0upons.com) is our own coupon coming round again
  * and is skipped too, or the site would echo itself. The store is read from
  * the title ("$10 off at Wonder", "Sideline Swap Coupon Code", "Netcup
  * Voucher Codes") and, failing that, from the host the post links to, unless
@@ -285,13 +285,20 @@ export function parseDiscount(
 }
 
 /**
+ * Our own hosts: the pwa.pit.world home the app lives on now, and the retired
+ * c0upons.com, which old reposts still link to until it lapses.
+ */
+const OWN_HOST = /^c0upons\.pwa\.pit\.world$|(^|\.)c0upons\.com$/i;
+const OWN_TEXT = /\bc0upons\.(?:pwa\.pit\.world|com)\b/i;
+
+/**
  * One feed entry to one coupon row with its store, or null when the post is
  * conversation, an echo of our own site, or names no store.
  */
 export function toCouponRow(entry: FeedEntry): RedditCouponRow | null {
   const text = bodyText(entry.content);
   const links = externalLinks(entry);
-  if (links.some((l) => /(^|\.)c0upons\.com$/i.test(hostOf(l) ?? '')) || /\bc0upons\.com\b/i.test(text)) return null;
+  if (links.some((l) => OWN_HOST.test(hostOf(l) ?? '')) || OWN_TEXT.test(text)) return null;
   const named = links.filter((l) => !SHORTENERS.test(hostOf(l) ?? ''));
   const code = extractCode(text, entry.title) ?? named.map(codeFromUrl).find(Boolean) ?? null;
   if (!code && !links.length) return null;

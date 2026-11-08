@@ -86,8 +86,8 @@ test('the thread names the store and code and links back to the coupon', () => {
   const t = topicFor(coupon());
   assert.equal(t.title, 'Bookshop.org: 20% off banned books (code BBW26)');
   assert.match(t.body, /\*\*Code:\*\* `BBW26`/);
-  assert.match(t.body, /\(https:\/\/c0upons\.com\/stores\/bookshop-org\)/);
-  assert.match(t.body, /\(https:\/\/c0upons\.com\/coupons\/42\)/);
+  assert.match(t.body, /\(https:\/\/c0upons\.pwa\.pit\.world\/stores\/bookshop-org\)/);
+  assert.match(t.body, /\(https:\/\/c0upons\.pwa\.pit\.world\/coupons\/42\)/);
   assert.ok(!t.body.includes('\n\n\n'));
   assert.ok(topicFor(coupon({ title: 'x'.repeat(300) })).title.length <= 160);
 });
