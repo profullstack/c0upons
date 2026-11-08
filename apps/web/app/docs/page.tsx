@@ -197,7 +197,7 @@ export default function DocsPage() {
 
         <section id="cli-install" className="scroll-mt-20 flex flex-col gap-4">
           <h3 className="text-base font-bold text-gray-800">Installation</h3>
-          <Code>{`curl -fsSL https://c0upons.com/install.sh | sh`}</Code>
+          <Code>{`curl -fsSL https://c0upons.pwa.pit.world/install.sh | sh`}</Code>
           <p className="text-sm text-gray-500">
             Installs to <IC>/usr/local/bin/c0upons</IC> (or <IC>~/.local/bin</IC> without sudo).
           </p>
@@ -259,7 +259,7 @@ export default function DocsPage() {
                 <tbody>
                   <tr>
                     <td className="px-4 py-2.5"><IC>C0UPONS_API</IC></td>
-                    <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">https://c0upons.com/api</td>
+                    <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">https://c0upons.pwa.pit.world/api</td>
                     <td className="px-4 py-2.5 text-gray-500">Override the API base URL</td>
                   </tr>
                 </tbody>
@@ -273,7 +273,7 @@ export default function DocsPage() {
           <h2 className="text-xl font-bold text-gray-900 pb-2 border-b border-gray-200">REST API</h2>
           <p className="text-gray-600 leading-relaxed">
             No authentication required for read operations. Base URL:{' '}
-            <IC>https://c0upons.com/api</IC>
+            <IC>https://c0upons.pwa.pit.world/api</IC>
           </p>
         </section>
 
@@ -283,7 +283,7 @@ export default function DocsPage() {
             method="GET"
             path="/api/coupons"
             desc="Returns all coupons ordered by votes descending."
-            example="curl https://c0upons.com/api/coupons"
+            example="curl https://c0upons.pwa.pit.world/api/coupons"
             response={`[
   {
     "id": 1,
@@ -303,13 +303,13 @@ export default function DocsPage() {
             method="GET"
             path="/api/coupons/[id]"
             desc="Returns a single coupon by ID."
-            example="curl https://c0upons.com/api/coupons/1"
+            example="curl https://c0upons.pwa.pit.world/api/coupons/1"
           />
           <Endpoint
             method="POST"
             path="/api/coupons"
             desc="Submit a new coupon."
-            example={`curl -X POST https://c0upons.com/api/coupons \\
+            example={`curl -X POST https://c0upons.pwa.pit.world/api/coupons \\
   -H "Content-Type: application/json" \\
   -d '{"store_id":42,"title":"20% off","code":"SAVE20","discount":"20%"}'`}
           />
@@ -321,13 +321,13 @@ export default function DocsPage() {
             method="GET"
             path="/api/stores"
             desc="Returns all stores alphabetically."
-            example="curl https://c0upons.com/api/stores"
+            example="curl https://c0upons.pwa.pit.world/api/stores"
           />
           <Endpoint
             method="GET"
             path="/api/stores/[slug]"
             desc="Returns a store and its coupons."
-            example="curl https://c0upons.com/api/stores/nike"
+            example="curl https://c0upons.pwa.pit.world/api/stores/nike"
           />
         </section>
 
@@ -337,7 +337,7 @@ export default function DocsPage() {
             method="GET"
             path="/api/search?q=query"
             desc="Full-text search across coupon titles, descriptions, codes, and store names."
-            example={`curl "https://c0upons.com/api/search?q=nike"`}
+            example={`curl "https://c0upons.pwa.pit.world/api/search?q=nike"`}
           />
         </section>
 
@@ -353,7 +353,7 @@ export default function DocsPage() {
             method="POST"
             path="/api/coupons/[id]/reveal"
             desc="Read the coupon's deal page with a browser, click what a shopper would, and store any code found. Cached for a day when the page had none."
-            example="curl -X POST https://c0upons.com/api/coupons/67/reveal"
+            example="curl -X POST https://c0upons.pwa.pit.world/api/coupons/67/reveal"
             response={`{
   "code": "SAVE25NOW",
   "method": "clicked",
@@ -366,7 +366,7 @@ export default function DocsPage() {
             method="POST"
             path="/api/sync/reveal"
             desc="Read the deal pages of up to three coupons that have no code yet, most-voted first. Answers how many are still waiting."
-            example="curl -X POST https://c0upons.com/api/sync/reveal"
+            example="curl -X POST https://c0upons.pwa.pit.world/api/sync/reveal"
             response={`{
   "ok": true,
   "remaining": 287,
@@ -378,35 +378,35 @@ export default function DocsPage() {
             method="POST"
             path="/api/sync/nichedb"
             desc="Pull the next pages of nichedb.dev's deals collection into stores and coupons. Throttled to one run per ten minutes."
-            example="curl -X POST https://c0upons.com/api/sync/nichedb"
+            example="curl -X POST https://c0upons.pwa.pit.world/api/sync/nichedb"
             response={`{ "ok": true, "skipped": false, "fetched": 267, "upserted": 239, "stores": 36, "cursor": 8317456, "more": false }`}
           />
           <Endpoint
             method="POST"
             path="/api/sync/reddit"
             desc="Read the newest r/couponcodes posts into stores and coupons. A post with a code or a link to the store becomes a listing; a request for a code is skipped. The server polls this itself every five minutes; throttled to one run per four minutes."
-            example="curl -X POST https://c0upons.com/api/sync/reddit"
+            example="curl -X POST https://c0upons.pwa.pit.world/api/sync/reddit"
             response={`{ "ok": true, "skipped": false, "via": "relay", "fetched": 25, "taken": 18, "inserted": 2, "updated": 16, "declined": 7, "stores": 17, "newest": "t3_1wf5dvp" }`}
           />
           <Endpoint
             method="POST"
             path="/api/sync/grocery"
             desc="Read the next few grocery weekly ads (Raley's, Safeway, Walmart, Target, Costco, H-E-B, Publix and more, across twenty US metros) into stores and coupons, one row per advertised price, and remove rows whose week has ended. The server polls this itself every five minutes; throttled to one run per four minutes."
-            example="curl -X POST https://c0upons.com/api/sync/grocery"
+            example="curl -X POST https://c0upons.pwa.pit.world/api/sync/grocery"
             response={`{ "ok": true, "skipped": false, "listed": 212, "remaining": 209, "pruned": 0, "written": 331, "flyers": [{ "id": 8141217, "store": "Raley's", "postal_code": "95814", "items": 123, "written": 123 }] }`}
           />
           <Endpoint
             method="POST"
             path="/api/sync/peerpush"
             desc="Read peerpush.com/deals (discount codes software founders attach to their PeerPush listings) into stores and coupons, and remove deals past their valid-until date. The server's scraper daemon runs this daily; throttled to one run per hour."
-            example="curl -X POST https://c0upons.com/api/sync/peerpush"
+            example="curl -X POST https://c0upons.pwa.pit.world/api/sync/peerpush"
             response={`{ "ok": true, "skipped": false, "pages": 4, "deals": 127, "inserted": 127, "updated": 0, "declined": 0, "pruned": 0, "stores": 127, "added": ["Kliport: 50% OFF"] }`}
           />
           <Endpoint
             method="GET"
             path="/api/v1/daemon"
             desc="What the scraper daemon (@profullstack/scraper-daemon) is doing: its jobs, the last run of each, failures and the next run."
-            example="curl https://c0upons.com/api/v1/daemon"
+            example="curl https://c0upons.pwa.pit.world/api/v1/daemon"
             response={`{ "name": "c0upons", "engine": "bullmq", "running": true, "tasks": [{ "name": "peerpush", "every": 86400000, "ok": 1, "failed": 0, "lastError": null }] }`}
           />
         </section>
@@ -417,14 +417,14 @@ export default function DocsPage() {
           <p className="text-gray-600 leading-relaxed">
             Everything above is also a Model Context Protocol server, so an agent can search coupons,
             read a store, and have the browser reveal a code without leaving its tools. Stateless
-            JSON-RPC over POST at <IC>https://c0upons.com/mcp</IC> (also <IC>/api/mcp</IC>), no key.
+            JSON-RPC over POST at <IC>https://c0upons.pwa.pit.world/mcp</IC> (also <IC>/api/mcp</IC>), no key.
             The descriptor for catalogs is at <IC>/.well-known/openmcp.json</IC>.
           </p>
           <Code>{`# Claude Code
-claude mcp add --transport http c0upons https://c0upons.com/mcp
+claude mcp add --transport http c0upons https://c0upons.pwa.pit.world/mcp
 
 # Any client: list the tools
-curl -X POST https://c0upons.com/mcp -H 'content-type: application/json' \\
+curl -X POST https://c0upons.pwa.pit.world/mcp -H 'content-type: application/json' \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`}</Code>
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             {[
@@ -472,7 +472,7 @@ curl -X POST https://c0upons.com/mcp -H 'content-type: application/json' \\
             </a>
           </div>
           <h3 className="text-base font-bold text-gray-800 mt-2">Submit via API</h3>
-          <Code>{`curl -X POST https://c0upons.com/api/coupons \\
+          <Code>{`curl -X POST https://c0upons.pwa.pit.world/api/coupons \\
   -H "Content-Type: application/json" \\
   -d '{"store_id": 1, "title": "15% off everything", "code": "GET15"}'`}</Code>
         </section>

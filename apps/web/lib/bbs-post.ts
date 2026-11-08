@@ -18,7 +18,7 @@
  */
 import type { SqlDb } from './nichedb-sync.ts';
 
-export const SITE = 'https://c0upons.com';
+export const SITE = 'https://c0upons.pwa.pit.world';
 
 export interface BbsCoupon {
   id: number;
@@ -124,7 +124,7 @@ export async function ensureBbsSchema(db: SqlDb): Promise<void> {
 export interface BbsDeps {
   fetch?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
-  /** Defaults to BBS_API_URL, else https://c0upons.com/bbs. */
+  /** Defaults to BBS_API_URL, else https://c0upons.pwa.pit.world/bbs. */
   baseUrl?: string;
   /** Defaults to BBS_POST_TOKEN. Without one nothing is posted. */
   token?: string;

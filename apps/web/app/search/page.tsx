@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: 'Search Coupons',
   description:
     'Search thousands of community-submitted coupon codes and promo deals. Find discounts for any store — electronics, fashion, groceries, travel and more.',
-  alternates: { canonical: 'https://c0upons.com/search' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/search' },
 };
 
 async function search(q: string): Promise<Coupon[]> {

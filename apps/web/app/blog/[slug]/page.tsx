@@ -54,11 +54,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: post.title,
     description: post.excerpt ?? undefined,
-    alternates: { canonical: `https://c0upons.com/blog/${slug}` },
+    alternates: { canonical: `https://c0upons.pwa.pit.world/blog/${slug}` },
     openGraph: {
       title: post.title,
       description: post.excerpt ?? undefined,
-      url: `https://c0upons.com/blog/${slug}`,
+      url: `https://c0upons.pwa.pit.world/blog/${slug}`,
       type: 'article',
       publishedTime: post.published_at,
       modifiedTime: post.updated_at,

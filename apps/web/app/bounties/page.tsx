@@ -8,7 +8,7 @@ import { getSessionDid } from '@/lib/auth';
 export const metadata: Metadata = {
   title: 'Coupon Bounties',
   description: 'Post a bounty and pay someone to find a coupon code for your favourite store.',
-  alternates: { canonical: 'https://c0upons.com/bounties' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/bounties' },
 };
 
 interface Bounty {

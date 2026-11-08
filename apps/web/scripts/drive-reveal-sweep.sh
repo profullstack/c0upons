@@ -3,9 +3,9 @@
 # nothing is left, printing each round. The schedule does three coupons every
 # fifteen minutes on its own; this is for when the queue is long and someone
 # wants it read today.
-#   BASE_URL=https://c0upons.com apps/web/scripts/drive-reveal-sweep.sh
+#   BASE_URL=https://c0upons.pwa.pit.world apps/web/scripts/drive-reveal-sweep.sh
 set -uo pipefail
-base="${BASE_URL:-https://c0upons.com}"
+base="${BASE_URL:-https://c0upons.pwa.pit.world}"
 out="$(mktemp)"
 trap 'rm -f "$out"' EXIT
 round=0

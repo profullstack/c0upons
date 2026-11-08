@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: 'All Stores',
   description:
     'Browse coupon codes for hundreds of online stores — from fashion and electronics to groceries and travel. Find the best promo codes for your favourite retailer.',
-  alternates: { canonical: 'https://c0upons.com/stores' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/stores' },
 };
 
 async function getStores(): Promise<StoreWithCount[]> {

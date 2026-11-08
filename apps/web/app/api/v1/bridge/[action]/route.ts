@@ -15,7 +15,7 @@ import { memberByDid } from '@/lib/members';
  */
 export const dynamic = 'force-dynamic';
 
-const APP_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://c0upons.com';
+const APP_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://c0upons.pwa.pit.world';
 
 function readCookie(request: Request, name: string): string | null {
   for (const part of (request.headers.get('cookie') ?? '').split(';')) {

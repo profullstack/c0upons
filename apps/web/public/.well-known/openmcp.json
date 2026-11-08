@@ -1,9 +1,9 @@
 {
   "openmcp": "0.1",
-  "mcp": "https://c0upons.com/mcp",
+  "mcp": "https://c0upons.pwa.pit.world/mcp",
   "name": "c0upons",
   "description": "Community coupon codes, seeded from nichedb.dev's deals collection and r/couponcodes, with a real browser that reveals the codes deal pages hide. Search, stores, one coupon, reveal, sync, over MCP.",
-  "url": "https://c0upons.com",
+  "url": "https://c0upons.pwa.pit.world",
   "operator": "https://logicsrc.com/.well-known/openprofile.md",
   "auth": {
     "kind": "none",

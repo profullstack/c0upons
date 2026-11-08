@@ -94,10 +94,10 @@ test('the thread names the store and code and links back to the coupon', () => {
 
 test('a coupon is posted once, to the board, with the bearer token', async () => {
   const b = board();
-  const first = await postCouponsToBbs(db, [coupon({ id: 101 })], { fetch: b.fetch, token: 'tsbb_x', baseUrl: 'https://c0upons.com/bbs', sleep: noSleep });
+  const first = await postCouponsToBbs(db, [coupon({ id: 101 })], { fetch: b.fetch, token: 'tsbb_x', baseUrl: 'https://c0upons.pwa.pit.world/bbs', sleep: noSleep });
   assert.deepEqual(first.map((r) => r.status), ['posted']);
-  assert.equal(first[0].url, 'https://c0upons.com/bbs/t/t-1');
-  assert.equal(b.calls[0].url, 'https://c0upons.com/bbs/api/v1/forums/coupons/topics');
+  assert.equal(first[0].url, 'https://c0upons.pwa.pit.world/bbs/t/t-1');
+  assert.equal(b.calls[0].url, 'https://c0upons.pwa.pit.world/bbs/api/v1/forums/coupons/topics');
   assert.equal(b.calls[0].auth, 'Bearer tsbb_x');
   assert.equal(b.calls[0].body.format, 'markdown');
 

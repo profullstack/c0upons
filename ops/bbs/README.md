@@ -1,13 +1,13 @@
 # c0upons.com/bbs
 
-The forums at https://c0upons.com/bbs are a [tsbb](https://github.com/profullstack/tsbb)
+The forums at https://c0upons.pwa.pit.world/bbs are a [tsbb](https://github.com/profullstack/tsbb)
 board, not part of this app. nginx sends `/bbs` and `/bbs/*` to it before the Next.js
 app ever sees the request (cli-tools `dev2/sites.d/c0upons.com.json`, `nginx_locations`).
 
 | | |
 | --- | --- |
 | Box | dev2, `/home/anthony/www/c0upons.com-bbs`, container `c0uponscom-bbs-app-1`, `127.0.0.1:3293` |
-| Base URL | `TSBB_BASE_URL=https://c0upons.com/bbs` (tsbb >= 0.9.0 mounts itself under the path) |
+| Base URL | `TSBB_BASE_URL=https://c0upons.pwa.pit.world/bbs` (tsbb >= 0.9.0 mounts itself under the path) |
 | Data | SQLite on the volume: `volumes/data/tsbb.db` |
 | Secrets | logicsrc vault `c0upons-bbs--prod` |
 | Updates | follows tsbb GitHub releases on its own (`TSBB_CHECKOUT_DIR`), every 5 minutes |
@@ -35,7 +35,7 @@ Every coupon that mail to submit@c0upons.com creates also gets a thread on the b
 - **Body:** store, code, deal and expiry, linking to the coupon's page.
 - **Once only:** `bbs_posts` records each coupon, so a retried mail never posts twice.
 - **Pacing:** posts are 16 s apart, because tsbb's flood guard refuses a second post inside 15 s. A `flooding` refusal waits and tries once more.
-- **Account:** posts go out as board user `c0upons` (#4), with the `tsbb_` token in vault `c0upons--prod` as `BBS_POST_TOKEN`. Without it nothing is posted. `BBS_API_URL` overrides the board (default `https://c0upons.com/bbs`).
+- **Account:** posts go out as board user `c0upons` (#4), with the `tsbb_` token in vault `c0upons--prod` as `BBS_POST_TOKEN`. Without it nothing is posted. `BBS_API_URL` overrides the board (default `https://c0upons.pwa.pit.world/bbs`).
 
 To mint a new token (it reuses the user, and the old token keeps working until it is revoked in the board's settings):
 

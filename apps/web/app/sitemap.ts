@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getDb } from '@/lib/db';
 
-const BASE = 'https://c0upons.com';
+const BASE = 'https://c0upons.pwa.pit.world';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [

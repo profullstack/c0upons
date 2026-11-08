@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { getDb } from '@/lib/db';
 
-const BASE = 'https://c0upons.com';
+const BASE = 'https://c0upons.pwa.pit.world';
 
 function escapeXml(str: string): string {
   return str

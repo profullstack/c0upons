@@ -4,7 +4,7 @@
 // pure and testable: everything here is a function of one already-loaded row.
 import type { Coupon } from './types';
 
-export const BASE = 'https://c0upons.com';
+export const BASE = 'https://c0upons.pwa.pit.world';
 
 /** Trim to `max` characters on a word boundary, with an ellipsis. */
 export function truncate(text: string, max: number): string {

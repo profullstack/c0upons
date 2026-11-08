@@ -19,7 +19,7 @@ const json = (status: number, body: unknown) =>
   NextResponse.json(body, { status, headers: { ...CORS, 'mcp-protocol-version': '2025-06-18' } });
 
 /**
- * c0upons over the Model Context Protocol: `https://c0upons.com/api/mcp`
+ * c0upons over the Model Context Protocol: `https://c0upons.pwa.pit.world/api/mcp`
  * (also `/mcp`). Stateless JSON-RPC over POST; one message or a batch.
  * Described for catalogs at `/.well-known/openmcp.json`.
  */

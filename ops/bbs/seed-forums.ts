@@ -62,21 +62,21 @@ const SETTINGS: Record<string, unknown> = {
     'The c0upons.com community: post hot deals, working promo codes and freebies, ask for a deal, and vote up the best finds.',
   'board.skin': 'deals',
   'board.accent': '#f97316',
-  'board.logoUrl': 'https://c0upons.com/logo.svg',
-  'board.logoHref': 'https://c0upons.com',
-  'board.faviconUrl': 'https://c0upons.com/favicon.svg',
+  'board.logoUrl': 'https://c0upons.pwa.pit.world/logo.svg',
+  'board.logoHref': 'https://c0upons.pwa.pit.world',
+  'board.faviconUrl': 'https://c0upons.pwa.pit.world/favicon.svg',
   // The tsbb platform pitch on the index is for boards that are about tsbb.
   'board.showPlatform': false,
   // c0upons.com has no dark mode, so neither does its forum by default.
   'board.theme': 'light',
   // The site's own header navigation, with the board's items where Forums sits.
   'board.navLinks': [
-    'Coupons | https://c0upons.com/',
-    'Stores | https://c0upons.com/stores',
+    'Coupons | https://c0upons.pwa.pit.world/',
+    'Stores | https://c0upons.pwa.pit.world/stores',
     '{forums}',
-    'Bounties | https://c0upons.com/bounties',
-    'Blog | https://c0upons.com/blog',
-    'Docs | https://c0upons.com/docs',
+    'Bounties | https://c0upons.pwa.pit.world/bounties',
+    'Blog | https://c0upons.pwa.pit.world/blog',
+    'Docs | https://c0upons.pwa.pit.world/docs',
   ].join('\n'),
 };
 

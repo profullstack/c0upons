@@ -1,7 +1,7 @@
 import { gate } from "@/lib/crawl-gateway";
 import { NextRequest, NextResponse } from 'next/server';
 
-const CANONICAL = 'https://c0upons.com';
+const CANONICAL = 'https://c0upons.pwa.pit.world';
 
 export async function middleware(req: NextRequest) {
   // Crawl gateway first: AI training crawlers get 402 Payment Required (or the
@@ -23,7 +23,7 @@ export async function middleware(req: NextRequest) {
   if (isWww || isRailway || isHttp) {
     const url = req.nextUrl.clone();
     url.protocol = 'https';
-    url.host = 'c0upons.com';
+    url.host = 'c0upons.pwa.pit.world';
     url.port = '';
     return NextResponse.redirect(url, { status: 301 });
   }

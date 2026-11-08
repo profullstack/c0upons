@@ -135,7 +135,7 @@ test('JSON-LD is an Offer plus a BreadcrumbList', () => {
   const [offer, breadcrumbs] = couponJsonLd(coupon());
 
   assert.equal(offer['@type'], 'Offer');
-  assert.equal(offer.url, 'https://c0upons.com/coupons/80013');
+  assert.equal(offer.url, 'https://c0upons.pwa.pit.world/coupons/80013');
   assert.equal(offer.discountCode, 'SAVE20');
   assert.equal(offer.discount, '20%');
   assert.equal(offer.validThrough, '2026-12-23');
@@ -148,8 +148,8 @@ test('JSON-LD is an Offer plus a BreadcrumbList', () => {
     breadcrumbs.itemListElement.map((i) => i.position),
     [1, 2, 3, 4]
   );
-  assert.equal(breadcrumbs.itemListElement[2].item, 'https://c0upons.com/stores/macys');
-  assert.equal(breadcrumbs.itemListElement[3].item, 'https://c0upons.com/coupons/80013');
+  assert.equal(breadcrumbs.itemListElement[2].item, 'https://c0upons.pwa.pit.world/stores/macys');
+  assert.equal(breadcrumbs.itemListElement[3].item, 'https://c0upons.pwa.pit.world/coupons/80013');
 });
 
 test('JSON-LD drops a non-ISO expiry rather than emitting an invalid date', () => {
@@ -169,5 +169,5 @@ test('JSON-LD serializes (no undefined leaks into the script tag)', () => {
 });
 
 test('the share card is the generated 1200x630 route, not the store logo', () => {
-  assert.equal(couponShareImage(coupon()), 'https://c0upons.com/coupons/80013/opengraph-image');
+  assert.equal(couponShareImage(coupon()), 'https://c0upons.pwa.pit.world/coupons/80013/opengraph-image');
 });

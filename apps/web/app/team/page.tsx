@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: 'Team & Company',
   description:
     'Meet the team behind c0upons — built by Profullstack, Inc., a software studio focused on open-source developer tools and community platforms.',
-  alternates: { canonical: 'https://c0upons.com/team' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/team' },
   openGraph: {
     title: 'Team & Company — c0upons',
     description:
       'Meet the team behind c0upons — built by Profullstack, Inc., a software studio focused on open-source developer tools and community platforms.',
-    url: 'https://c0upons.com/team',
+    url: 'https://c0upons.pwa.pit.world/team',
   },
 };
 

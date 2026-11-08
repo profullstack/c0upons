@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Privacy policy for c0upons.com — what data we collect and how we use it.',
-  alternates: { canonical: 'https://c0upons.com/privacy' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/privacy' },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

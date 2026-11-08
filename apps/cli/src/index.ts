@@ -13,7 +13,7 @@ const { version } = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8')
 ) as { version: string };
 
-const BASE_URL = process.env.C0UPONS_API_URL ?? 'https://c0upons.com';
+const BASE_URL = process.env.C0UPONS_API_URL ?? 'https://c0upons.pwa.pit.world';
 
 const program = new Command();
 

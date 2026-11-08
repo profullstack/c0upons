@@ -12,7 +12,7 @@ interface StoreWithCount extends Store {
   coupon_count: number;
 }
 
-const BASE = 'https://c0upons.com';
+const BASE = 'https://c0upons.pwa.pit.world';
 
 async function getTrendingCoupons(): Promise<Coupon[]> {
   try {
@@ -388,7 +388,7 @@ export default async function HomePage() {
         </div>
         <div className="flex flex-col gap-3 w-full md:w-auto">
           <code className="bg-gray-800 text-orange-400 font-mono text-sm px-4 py-3 rounded-lg whitespace-nowrap">
-            curl -fsSL https://c0upons.com/install.sh | sh
+            curl -fsSL https://c0upons.pwa.pit.world/install.sh | sh
           </code>
           <Link
             href="/docs#cli"
