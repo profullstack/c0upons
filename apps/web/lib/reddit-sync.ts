@@ -44,7 +44,7 @@ export const SUBREDDIT = 'couponcodes';
 export const FEED_URL = `https://www.reddit.com/r/${SUBREDDIT}/new.rss?limit=25`;
 export const RELAY_URL = 'https://obscura.openmcp.logicsrc.com/mcp';
 export const MIN_MINUTES_BETWEEN_RUNS = 4;
-export const USER_AGENT = 'c0upons/1.7 (+https://c0upons.com; reads r/couponcodes for new listings)';
+export const USER_AGENT = 'c0upons/1.7 (+https://c0upons.pwa.pit.world; reads r/couponcodes for new listings)';
 
 /** One `<entry>` of the subreddit's Atom feed, as much of it as the mapping reads. */
 export interface FeedEntry {

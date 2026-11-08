@@ -46,7 +46,7 @@ function entry(id, title, html, { updated = '2026-09-13T10:00:00+00:00', author 
 const ENTRIES = [
   // Our own coupon reposted to the subreddit: an echo, must be declined.
   entry('1wf5dvp', 'ChatGPT Business: 2 seats for the price of 1 for 48 months ($25/mo off)',
-    '<div class="md"><p>code: tdsynnexus</p></div> <a href="https://c0upons.com/coupons/647">[link]</a>'),
+    '<div class="md"><p>code: tdsynnexus</p></div> <a href="https://c0upons.pwa.pit.world/coupons/647">[link]</a>'),
   // A link post: the store is in the title, the link is a shortener.
   entry('1wf40lq', '$10 off $60 Woolino', '<a href="https://prz.io/O5oZ5jeCL">[link]</a>'),
   // A request for a code: conversation, declined.

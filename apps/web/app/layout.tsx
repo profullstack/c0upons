@@ -7,7 +7,7 @@ import Script from "next/script";
 
 const geist = Geist({ subsets: ["latin"] });
 
-const BASE = "https://c0upons.com";
+const BASE = "https://c0upons.pwa.pit.world";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE),
@@ -82,7 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="alternate" type="application/rss+xml" title="c0upons Blog" href="https://c0upons.com/blog/rss.xml" />
+        <link rel="alternate" type="application/rss+xml" title="c0upons Blog" href="https://c0upons.pwa.pit.world/blog/rss.xml" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify([orgSchema, siteSchema]) }}

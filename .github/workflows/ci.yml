@@ -33,7 +33,7 @@ jobs:
           CI: true
       - run: bun run build:web
         env:
-          NEXT_PUBLIC_BASE_URL: https://c0upons.com
+          NEXT_PUBLIC_BASE_URL: https://c0upons.pwa.pit.world
       # The production server must boot under Bun and answer.
       - name: Standalone server answers under Bun
         run: |

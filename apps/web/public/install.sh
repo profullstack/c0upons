@@ -1,12 +1,12 @@
 #!/bin/sh
 # c0upons CLI installer
-# Usage: curl -fsSL https://c0upons.com/install.sh | sh
+# Usage: curl -fsSL https://c0upons.pwa.pit.world/install.sh | sh
 #
 # POSIX sh compatible — works under dash/sh as well as bash. Avoid bashisms
 # (pipefail, echo -e, [[ ]], &>) so `curl ... | sh` does not error.
 set -eu
 
-CLI_URL="https://c0upons.com/cli/c0upons"
+CLI_URL="https://c0upons.pwa.pit.world/cli/c0upons"
 BIN_NAME="c0upons"
 
 BOLD="\033[1m"

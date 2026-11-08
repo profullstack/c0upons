@@ -55,7 +55,7 @@ export const SOURCE = 'peerpush';
 export const DEALS_URL = 'https://peerpush.com/deals';
 export const DEAL_VIEWS = ['', '?type=big', '?type=ending', '?type=free'];
 export const MIN_MINUTES_BETWEEN_RUNS = 60;
-export const USER_AGENT = 'c0upons/1.10 (+https://c0upons.com; reads peerpush.com/deals daily)';
+export const USER_AGENT = 'c0upons/1.10 (+https://c0upons.pwa.pit.world; reads peerpush.com/deals daily)';
 
 /** The fields of a PeerPush product this sync reads. */
 export interface PeerpushDeal {

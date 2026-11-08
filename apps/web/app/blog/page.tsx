@@ -8,7 +8,7 @@ import { getDb } from '@/lib/db';
 export const metadata: Metadata = {
   title: 'Blog',
   description: 'Tips, deal roundups, and savings guides from the c0upons community.',
-  alternates: { canonical: 'https://c0upons.com/blog' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/blog' },
 };
 
 interface Post {

@@ -1,4 +1,4 @@
 Contact: mailto:anthony@profullstack.com
 Expires: 2027-06-04T00:00:00.000Z
 Preferred-Languages: en
-Canonical: https://c0upons.com/.well-known/security.txt
+Canonical: https://c0upons.pwa.pit.world/.well-known/security.txt

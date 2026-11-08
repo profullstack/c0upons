@@ -6,22 +6,22 @@ c0upons is a free, open-source coupon aggregator where anyone can browse deals, 
 
 ## Browse
 
-- [Homepage](https://c0upons.com/): Trending coupons and top stores.
-- [All Stores](https://c0upons.com/stores): Browse every store with active coupons.
-- [Search](https://c0upons.com/search): Full-text search across stores, codes, and titles.
-- [Submit a Coupon](https://c0upons.com/submit): Add a new coupon code to the community.
+- [Homepage](https://c0upons.pwa.pit.world/): Trending coupons and top stores.
+- [All Stores](https://c0upons.pwa.pit.world/stores): Browse every store with active coupons.
+- [Search](https://c0upons.pwa.pit.world/search): Full-text search across stores, codes, and titles.
+- [Submit a Coupon](https://c0upons.pwa.pit.world/submit): Add a new coupon code to the community.
 
 ## Developers
 
-- [Documentation](https://c0upons.com/docs): CLI reference and REST API docs.
-- [CLI Install](https://c0upons.com/install.sh): `curl -fsSL https://c0upons.com/install.sh | sh`
-- [REST API](https://c0upons.com/docs#api): JSON endpoints — no auth required for reads.
+- [Documentation](https://c0upons.pwa.pit.world/docs): CLI reference and REST API docs.
+- [CLI Install](https://c0upons.pwa.pit.world/install.sh): `curl -fsSL https://c0upons.pwa.pit.world/install.sh | sh`
+- [REST API](https://c0upons.pwa.pit.world/docs#api): JSON endpoints — no auth required for reads.
 
 ## Company
 
-- [About](https://c0upons.com/about): Mission, project background, and open-source info.
-- [Privacy Policy](https://c0upons.com/privacy): How we handle your data.
-- [Terms of Service](https://c0upons.com/terms): Rules for using and contributing to c0upons.
+- [About](https://c0upons.pwa.pit.world/about): Mission, project background, and open-source info.
+- [Privacy Policy](https://c0upons.pwa.pit.world/privacy): How we handle your data.
+- [Terms of Service](https://c0upons.pwa.pit.world/terms): Rules for using and contributing to c0upons.
 - [GitHub](https://github.com/profullstack/c0upons): Source code and issue tracker.
 
 ## Key facts

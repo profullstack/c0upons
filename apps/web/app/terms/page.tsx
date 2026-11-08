@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of service for c0upons.com — rules for using and contributing to the platform.',
-  alternates: { canonical: 'https://c0upons.com/terms' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/terms' },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

@@ -2,9 +2,9 @@
 
 A community coupon code directory. Use it to find discount codes and deals for online stores.
 
-**API base:** https://c0upons.com/api  
+**API base:** https://c0upons.pwa.pit.world/api  
 **Auth:** None required for read operations  
-**Docs:** https://c0upons.com/docs
+**Docs:** https://c0upons.pwa.pit.world/docs
 
 ## Tools
 

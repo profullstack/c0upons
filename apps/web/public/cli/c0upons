@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # c0upons — Community Coupon CLI
-# https://c0upons.com
+# https://c0upons.pwa.pit.world
 #
-# Install: curl -fsSL https://c0upons.com/install.sh | sh
+# Install: curl -fsSL https://c0upons.pwa.pit.world/install.sh | sh
 
 set -euo pipefail
 
 VERSION="1.10.1"
-BASE_URL="${C0UPONS_API:-https://c0upons.com/api}"
+BASE_URL="${C0UPONS_API:-https://c0upons.pwa.pit.world/api}"
 # Website root (for login + share links). Defaults to BASE_URL without /api.
 WEB_URL="${C0UPONS_WEB:-${BASE_URL%/api}}"
 
@@ -53,7 +53,7 @@ usage() {
   echo "  c0upons bounty --store Adidas --title 'Need a 30% off code' --reward 1.00"
   echo ""
   echo -e "${DIM}Override API: export C0UPONS_API=http://localhost:3000/api${RESET}"
-  echo -e "${DIM}Docs: https://c0upons.com/docs${RESET}"
+  echo -e "${DIM}Docs: https://c0upons.pwa.pit.world/docs${RESET}"
 }
 
 require_jq() {
@@ -150,7 +150,7 @@ print_coupon() {
     echo -e "  No code — deal link available"
   fi
   [ -n "$expiry" ] && echo -e "  ${DIM}Expires: ${expiry}${RESET}"
-  echo -e "  ${DIM}https://c0upons.com/coupons/${id}${RESET}"
+  echo -e "  ${DIM}https://c0upons.pwa.pit.world/coupons/${id}${RESET}"
   echo ""
 }
 
@@ -445,7 +445,7 @@ cmd_upgrade() {
   echo -e "Upgrading ${BOLD}c0upons${RESET}…"
   local tmp
   tmp=$(mktemp)
-  curl -fsSL "https://c0upons.com/cli/c0upons" -o "$tmp"
+  curl -fsSL "https://c0upons.pwa.pit.world/cli/c0upons" -o "$tmp"
   chmod +x "$tmp"
   local new_version
   new_version=$(bash "$tmp" version 2>/dev/null || echo "unknown")

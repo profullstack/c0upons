@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'About',
   description: 'c0upons is a free, open-source community coupon platform built by Profullstack, Inc.',
-  alternates: { canonical: 'https://c0upons.com/about' },
+  alternates: { canonical: 'https://c0upons.pwa.pit.world/about' },
 };
 
 export default function AboutPage() {

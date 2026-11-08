@@ -47,7 +47,7 @@ import {
 
 export const SOURCE = 'flipp';
 export const API_URL = 'https://backflipp.wishabi.com/flipp';
-export const USER_AGENT = 'c0upons/1.8 (+https://c0upons.com; reads weekly grocery ads)';
+export const USER_AGENT = 'c0upons/1.8 (+https://c0upons.pwa.pit.world; reads weekly grocery ads)';
 export const MIN_MINUTES_BETWEEN_RUNS = 4;
 export const MAX_FLYERS_PER_RUN = 6;
 export const QUEUE_TTL_HOURS = 6;

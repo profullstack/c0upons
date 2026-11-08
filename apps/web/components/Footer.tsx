@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <div className="bg-gray-900 text-gray-400 mt-20">
       <ProfullstackFooter
-        site="https://c0upons.com/"
+        site="https://c0upons.pwa.pit.world/"
         tagline="Community-powered coupon codes and deals."
         links={[
           { label: 'Stores', href: '/stores' },
