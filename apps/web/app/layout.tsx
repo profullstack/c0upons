@@ -87,6 +87,18 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify([orgSchema, siteSchema]) }}
         />
+        {/* WebMCP: site tools + the keyless /mcp coupon tools for the AI agent in the visitor's browser
+            (@profullstack/webmcp). The sync_* / reveal_pending jobs are operator chores, not visitor tools. */}
+        <script
+          type="module"
+          data-webmcp=""
+          src="https://cdn.jsdelivr.net/npm/@profullstack/webmcp@0/src/embed.js"
+          data-mcp="/mcp"
+          data-mcp-exclude="sync_deals,sync_reddit,sync_grocery,sync_peerpush,reveal_pending"
+          data-search-api="/api/search?q={query}"
+          data-search="/search?q={query}"
+          data-pages={JSON.stringify({ stores: '/stores', coupons: '/coupons', bounties: '/bounties', submit: '/submit', blog: '/blog', docs: '/docs', about: '/about' })}
+        />
       </head>
       <body className={`${geist.className} bg-white text-gray-900 antialiased overflow-x-hidden`}>
         <Header />
