@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession, COOKIE } from '@/lib/auth';
 import { rememberMember } from '@/lib/members';
+import { COINPAY_UA } from '@/lib/coinpay-ua';
 
 const CLIENT_ID = process.env.COINPAY_API_KEY!;
 const CLIENT_SECRET = process.env.COINPAY_CLIENT_SECRET!;
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   // Exchange code for tokens
   const tokenRes = await fetch(`${BASE}/api/oauth/token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'user-agent': COINPAY_UA },
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: CLIENT_ID,
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
 
   // Get user info + DID
   const userRes = await fetch(`${BASE}/api/oauth/userinfo`, {
-    headers: { Authorization: `Bearer ${access_token}` },
+    headers: { Authorization: `Bearer ${access_token}`, 'user-agent': COINPAY_UA },
   });
 
   if (!userRes.ok) return fail('Could not fetch user info');
@@ -67,6 +68,7 @@ export async function GET(req: NextRequest) {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${access_token}`,
+        'user-agent': COINPAY_UA,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ client_id: CLIENT_ID }),

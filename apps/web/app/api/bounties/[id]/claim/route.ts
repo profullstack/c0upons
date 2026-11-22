@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getSessionDid } from '@/lib/auth';
+import { COINPAY_UA } from '@/lib/coinpay-ua';
 
 const COINPAY_BASE = 'https://coinpayportal.com';
 const API_KEY = process.env.COINPAY_API_KEY!;
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     // Get claimer's wallet address from DID reputation endpoint
     const didRes = await fetch(`${COINPAY_BASE}/api/reputation/agent/${encodeURIComponent(did)}/reputation`, {
-      headers: { Authorization: `Bearer ${API_KEY}` },
+      headers: { Authorization: `Bearer ${API_KEY}`, 'user-agent': COINPAY_UA },
     });
 
     let recipientAddress: string | null = null;
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // Prepare transaction from merchant web wallet
       const prepareRes = await fetch(`${COINPAY_BASE}/api/web-wallet/${MERCHANT_ID}/prepare-tx`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}`, 'user-agent': COINPAY_UA },
         body: JSON.stringify({
           to: recipientAddress,
           amount_usd: bounty.reward_usd,
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         // Broadcast the transaction
         const broadcastRes = await fetch(`${COINPAY_BASE}/api/web-wallet/${MERCHANT_ID}/broadcast`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}`, 'user-agent': COINPAY_UA },
           body: JSON.stringify({ tx_id: tx.tx_id }),
         });
         payoutOk = broadcastRes.ok;
